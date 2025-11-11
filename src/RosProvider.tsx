@@ -9,10 +9,7 @@ import { Ros } from 'roslib'
 
 const RosContext = createContext<Ros | null>(null)
 
-const RosProvider = ({
-  children,
-  url,
-}: PropsWithChildren<{ url: string }>) => {
+const RosProvider = ({ children, url }: PropsWithChildren<{ url: string }>) => {
   const rosRef = useRef<Ros | null>(null)
   const [connected, setConnected] = useState<boolean>(false)
 
