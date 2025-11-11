@@ -9,7 +9,7 @@ import { Ros } from 'roslib'
 
 const RosContext = createContext<Ros | null>(null)
 
-const RosConnection = ({
+const RosProvider = ({
   children,
   url,
 }: PropsWithChildren<{ url: string }>) => {
@@ -56,5 +56,5 @@ const RosConnection = ({
   )
 }
 
-export default RosConnection
+export default RosProvider
 export { RosContext }

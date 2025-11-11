@@ -1,14 +1,14 @@
-import RosConnection from './RosConnection'
+import RosProvider from './RosProvider'
 import { GamepadsProvider } from 'react-gamepads'
 
 function App() {
   return (
     <>
-      <RosConnection url="ws://localhost:9090">
+      <RosProvider url="ws://localhost:9090">
         <GamepadsProvider>
           <></>
         </GamepadsProvider>
-      </RosConnection>
+      </RosProvider>
     </>
   )
 }
