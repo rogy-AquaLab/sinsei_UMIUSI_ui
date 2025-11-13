@@ -1,12 +1,13 @@
 import RosProvider from './RosProvider'
-import { GamepadsProvider } from 'react-gamepads'
+import { GamepadsProvider } from 'react-ts-gamepads'
+import GamepadReceiver from './GamepadReceiver'
 
 function App() {
   return (
     <>
-      <RosProvider url="ws://localhost:9090">
+      <RosProvider url="ws://umiusi2.local:9090">
         <GamepadsProvider>
-          <></>
+          <GamepadReceiver />
         </GamepadsProvider>
       </RosProvider>
     </>
