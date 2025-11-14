@@ -1,5 +1,5 @@
 import RosProvider from './RosProvider'
-import { GamepadsProvider } from 'react-gamepads'
+import { GamepadsProvider } from 'react-ts-gamepads'
 
 function App() {
   return (
