@@ -3,6 +3,9 @@ import { Message, Topic } from 'roslib'
 import { type GamepadRef, useGamepads } from 'react-ts-gamepads'
 import { RosContext } from './RosProvider'
 
+const applyDeadzone = (value: number, threshold = 0.1) =>
+  Math.abs(value) <= threshold ? 0 : value
+
 const GamepadReceiver = () => {
   const [gamepads, setGamepads] = useState<GamepadRef>({})
   useGamepads((gp) => setGamepads(gp))
@@ -26,16 +29,17 @@ const GamepadReceiver = () => {
   const targetPayload = useMemo(() => {
     if (!firstPad) return null
     const axes = firstPad.axes ?? []
+    const getAxis = (index: number) => applyDeadzone(axes[index] ?? 0)
     return {
       velocity: {
-        x: -1 * (axes[0] ?? 0),
-        y: -1 * (axes[1] ?? 0),
+        x: -1 * getAxis(0),
+        y: -1 * getAxis(1),
         z: 0.0,
       },
       orientation: {
         x: -0.0,
-        y: axes[3],
-        z: axes[2] ?? 0,
+        y: getAxis(3),
+        z: getAxis(2),
       },
     }
   }, [firstPad])
