@@ -11,6 +11,13 @@ const GamepadReceiver = () => {
   useGamepads((gp) => setGamepads(gp))
   const ros = useContext(RosContext)
   const lastPublished = useRef<string>('')
+  const zeroPayload = useMemo(
+    () => ({
+      velocity: { x: 0, y: 0, z: 0 },
+      orientation: { x: 0, y: 0, z: 0 },
+    }),
+    [],
+  )
 
   const firstPad = useMemo(() => {
     const firstId = Object.keys(gamepads)[0]
@@ -27,7 +34,7 @@ const GamepadReceiver = () => {
   }, [ros])
 
   const targetPayload = useMemo(() => {
-    if (!firstPad) return null
+    if (!firstPad) return zeroPayload
     const axes = firstPad.axes ?? []
     const getAxis = (index: number) => applyDeadzone(axes[index] ?? 0)
     return {
@@ -42,7 +49,7 @@ const GamepadReceiver = () => {
         z: getAxis(2),
       },
     }
-  }, [firstPad])
+  }, [firstPad, zeroPayload])
 
   useEffect(() => {
     if (!(targetTopic && targetPayload)) return
