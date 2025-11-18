@@ -28,8 +28,8 @@ const GamepadReceiver = () => {
     if (!ros) return null
     return new Topic({
       ros,
-      name: '/cmd/target',
-      messageType: 'sinsei_umiusi_control/msg/Target',
+      name: '/user_input/target',
+      messageType: 'sinsei_umiusi_msgs/msg/Target',
     })
   }, [ros])
 
