@@ -1,17 +1,10 @@
-import {
-  createContext,
-  useState,
-  useEffect,
-  useRef,
-  type PropsWithChildren,
-} from 'react'
+import { createContext, useEffect, useRef, type PropsWithChildren } from 'react'
 import { Ros } from 'roslib'
 
 const RosContext = createContext<Ros | null>(null)
 
 const RosProvider = ({ children, url }: PropsWithChildren<{ url: string }>) => {
   const rosRef = useRef<Ros | null>(null)
-  const [connected, setConnected] = useState<boolean>(false)
 
   useEffect(() => {
     if (rosRef.current) {
@@ -24,17 +17,17 @@ const RosProvider = ({ children, url }: PropsWithChildren<{ url: string }>) => {
     const ros = new Ros({ url })
     rosRef.current = ros
 
-    ros.on('connection', () => {
-      setConnected(true)
-      console.log('Connected to ROS bridge server.')
-    })
-    ros.on('error', function (error) {
-      console.log('Error connecting to ROSBridge WebSocket server: ', error)
-    })
-    ros.on('close', function () {
-      setConnected(false)
-      console.log('Connection to ROSBridge WebSocket server closed.')
-    })
+    // ros.on('connection', () => {
+    //   setConnected(true)
+    //   console.log('Connected to ROS bridge server.')
+    // })
+    // ros.on('error', function (error) {
+    //   console.log('Error connecting to ROSBridge WebSocket server: ', error)
+    // })
+    // ros.on('close', function () {
+    //   setConnected(false)
+    //   console.log('Connection to ROSBridge WebSocket server closed.')
+    // })
 
     return () => {
       if (!(rosRef.current && rosRef.current.isConnected)) return
@@ -44,13 +37,7 @@ const RosProvider = ({ children, url }: PropsWithChildren<{ url: string }>) => {
     }
   }, [url])
 
-  return (
-    <RosContext value={rosRef.current}>
-      {/* 以下のh2タグは仮の表示 */}
-      <h2>{connected ? 'ROS Connected' : 'Connecting to ROS...'}</h2>
-      {children}
-    </RosContext>
-  )
+  return <RosContext value={rosRef.current}>{children}</RosContext>
 }
 
 export default RosProvider
