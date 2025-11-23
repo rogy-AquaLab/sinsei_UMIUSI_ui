@@ -39,14 +39,14 @@ const GamepadReceiver = () => {
     const getAxis = (index: number) => applyDeadzone(axes[index] ?? 0)
     return {
       velocity: {
-        x: -1 * getAxis(0),
-        y: -1 * getAxis(1),
+        x: -1 * getAxis(1),
+        y: -1 * getAxis(0),
         z: 0.0,
       },
       orientation: {
         x: -0.0,
-        y: getAxis(3),
-        z: getAxis(2),
+        y: -1 * getAxis(3),
+        z: -1 * getAxis(2),
       },
     }
   }, [firstPad, zeroPayload])
