@@ -9,7 +9,7 @@ const applyDeadzone = (value: number, threshold = 0.1) =>
 const GamepadReceiver = () => {
   const [gamepads, setGamepads] = useState<GamepadRef>({})
   useGamepads((gp) => setGamepads(gp))
-  const ros = useContext(RosContext)
+  const { ros } = useContext(RosContext)
   const lastPublished = useRef<string>('')
   const zeroPayload = useMemo(
     () => ({
