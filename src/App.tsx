@@ -6,14 +6,12 @@ import NavBar from './components/NavBar'
 
 function App() {
   return (
-    <>
-      <RosProvider url="ws://umiusi2.local:9090">
-        <GamepadsProvider>
-          <NavBar />
-          <GamepadReceiver />
-        </GamepadsProvider>
-      </RosProvider>
-    </>
+    <RosProvider url="ws://localhost:9090">
+      <GamepadsProvider>
+        <NavBar />
+        <GamepadReceiver />
+      </GamepadsProvider>
+    </RosProvider>
   )
 }
 
