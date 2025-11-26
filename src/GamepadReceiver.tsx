@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Message, Topic } from 'roslib'
 import { type GamepadRef, useGamepads } from 'react-ts-gamepads'
-import { RosContext } from './RosProvider'
+import { RosContext } from './providers/RosProvider'
 
 const applyDeadzone = (value: number, threshold = 0.1) =>
   Math.abs(value) <= threshold ? 0 : value
@@ -98,7 +98,7 @@ const GamepadReceiver = () => {
 
             {firstPad === pad && targetPayload && (
               <div>
-                <h3>Publishing to /cmd/target</h3>
+                <h3>Publishing to /user_input/target</h3>
                 <div>
                   velocity: x={targetPayload.velocity.x.toFixed(2)} y=
                   {targetPayload.velocity.y.toFixed(2)} z=
