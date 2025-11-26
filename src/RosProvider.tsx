@@ -25,9 +25,6 @@ const RosContext = createContext<RosContextValue>({
   disconnect: () => {},
 })
 
-/**
- * Props for RosProvider component
- */
 type RosProviderProps = PropsWithChildren<{
   /**
    * rosbridgeのWebSocket URL
