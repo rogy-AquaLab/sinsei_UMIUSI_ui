@@ -1,16 +1,19 @@
 import { GamepadsProvider } from 'react-ts-gamepads'
-import RosProvider from './RosProvider'
 import GamepadReceiver from './GamepadReceiver'
+import RosProvider from './providers/RosProvider'
+import ToastProvider from './providers/ToastProvider'
 import NavBar from './components/NavBar'
 
 function App() {
   return (
-    <RosProvider url="ws://localhost:9090">
-      <GamepadsProvider>
-        <NavBar />
-        <GamepadReceiver />
-      </GamepadsProvider>
-    </RosProvider>
+    <ToastProvider>
+      <RosProvider url="ws://localhost:9090">
+        <GamepadsProvider>
+          <NavBar />
+          <GamepadReceiver />
+        </GamepadsProvider>
+      </RosProvider>
+    </ToastProvider>
   )
 }
 
