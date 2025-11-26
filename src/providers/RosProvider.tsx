@@ -6,10 +6,17 @@ import {
   useState,
   useCallback,
   type PropsWithChildren,
+  useContext,
 } from 'react'
 import { Ros } from 'roslib'
+import { ToastContext } from './ToastProvider'
 
-type RosConnectionState = 'disconnected' | 'connecting' | 'connected'
+type RosConnectionState =
+  | 'disconnected'
+  | 'connecting'
+  | 'cancel_connecting'
+  | 'disconnecting'
+  | 'connected'
 
 type RosContextValue = {
   ros: Ros | null
@@ -39,8 +46,13 @@ const RosProvider = ({ children, url }: RosProviderProps) => {
   const rosRef = useRef<Ros | null>(null)
   const [connectionState, setConnectionState] =
     useState<RosConnectionState>('disconnected')
+  // コールバック関数内で最新のconnectionStateを参照できるようにするためのref
+  const connectionStateRef = useRef<RosConnectionState>(connectionState)
+  connectionStateRef.current = connectionState
 
-  // あとでoffにする際指定できるよう保持しておく
+  const toast = useContext(ToastContext)
+
+  // あとでoffにする際指定できるようコールバック関数を保持しておく
   const handlersRef = useRef<{
     handleConnection: () => void
     handleClose: () => void
@@ -64,7 +76,7 @@ const RosProvider = ({ children, url }: RosProviderProps) => {
       return
     }
 
-    console.log('Connecting to ROS bridge server at:', url)
+    console.log('Connecting to rosbridge server at:', url)
     setConnectionState('connecting')
 
     const ros = new Ros({ url })
@@ -72,21 +84,52 @@ const RosProvider = ({ children, url }: RosProviderProps) => {
 
     const handleConnection = () => {
       setConnectionState('connected')
-      console.log('Connected to ROS bridge server.')
+      console.log('Connected to rosbridge server.')
+      toast?.show('Connected to rosbridge server.', 'success')
     }
 
     const handleClose = () => {
+      if (connectionStateRef.current === 'connecting') return
+
+      switch (connectionStateRef.current) {
+        case 'disconnecting':
+          console.log('Disconnected from rosbridge server.')
+          toast?.show('Disconnected from rosbridge server.', 'success')
+          break
+        case 'cancel_connecting':
+          console.log('Connection attempt to rosbridge server canceled.')
+          toast?.show(
+            'Connection attempt to rosbridge server canceled.',
+            'info',
+          )
+          break
+        case 'connected':
+          console.log('Connection to rosbridge server lost.')
+          toast?.show('Connection to rosbridge server lost.', 'error')
+          break
+        default:
+          break
+      }
+
       setConnectionState('disconnected')
       detachHandlers()
       rosRef.current = null
-      console.log('Connection to ROS bridge server closed.')
     }
 
-    const handleError = (error: Event) => {
+    const handleError = () => {
+      // 接続解除後に遅れて発生したエラーや意図的なキャンセル時のエラーは無視
+      if (
+        connectionStateRef.current === 'disconnected' ||
+        connectionStateRef.current === 'cancel_connecting'
+      )
+        return
+
+      console.log('Failed to connect to rosbridge server.')
+      toast?.show('Failed to connect to rosbridge server.', 'error')
+
       setConnectionState('disconnected')
       detachHandlers()
       rosRef.current = null
-      console.error('Error connecting to ROSBridge WebSocket server: ', error)
     }
 
     handlersRef.current = { handleConnection, handleClose, handleError }
@@ -94,7 +137,7 @@ const RosProvider = ({ children, url }: RosProviderProps) => {
     ros.on('connection', handleConnection)
     ros.on('close', handleClose)
     ros.on('error', handleError)
-  }, [connectionState, detachHandlers, url])
+  }, [connectionState, detachHandlers, url, toast])
 
   const disconnect = useCallback(() => {
     if (!rosRef.current) {
@@ -102,11 +145,16 @@ const RosProvider = ({ children, url }: RosProviderProps) => {
       return
     }
 
-    detachHandlers()
+    console.log('Disconnecting from rosbridge server.')
+    if (connectionStateRef.current === 'connected') {
+      setConnectionState('disconnecting')
+    } else if (connectionStateRef.current === 'connecting') {
+      setConnectionState('cancel_connecting')
+    }
+
     rosRef.current.close()
     rosRef.current = null
-    setConnectionState('disconnected')
-    console.log('Disconnected from ROS bridge server.')
+    detachHandlers()
   }, [detachHandlers])
 
   // コンポーネントのアンマウント時に念のためdisconnectする

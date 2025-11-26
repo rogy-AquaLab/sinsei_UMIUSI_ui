@@ -1,10 +1,11 @@
 import { useContext } from 'react'
-import { RosContext } from '../RosProvider'
+import { RosContext } from '../providers/RosProvider'
 
 const RosConnectButton = () => {
   const { connectionState, connect, disconnect } = useContext(RosContext)
 
-  let handleClick: () => void, label: string, tone: string
+  let handleClick: (() => void) | undefined
+  let label: string, tone: string
   switch (connectionState) {
     case 'disconnected':
       handleClick = connect
@@ -15,6 +16,16 @@ const RosConnectButton = () => {
       handleClick = disconnect
       label = 'Cancel'
       tone = 'text-warning'
+      break
+    case 'disconnecting':
+      handleClick = undefined
+      label = 'Disconnecting...'
+      tone = 'text-muted'
+      break
+    case 'cancel_connecting':
+      handleClick = undefined
+      label = 'Cancelling...'
+      tone = 'text-muted'
       break
     case 'connected':
       handleClick = disconnect
