@@ -2,7 +2,7 @@ import { useContext } from 'react'
 import { FaCircle } from 'react-icons/fa'
 import { RosContext } from '../RosProvider'
 
-const ConnectionStatus = () => {
+const RosConnectionStatus = () => {
   const { connectionState } = useContext(RosContext)
 
   let label: string, tone: string
@@ -37,4 +37,4 @@ const ConnectionStatus = () => {
   )
 }
 
-export default ConnectionStatus
+export default RosConnectionStatus
