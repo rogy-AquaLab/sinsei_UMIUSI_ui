@@ -20,7 +20,8 @@
     "react-icons": "^5.5.0",
     "react-ts-gamepads": "^1.0.8",
     "roslib": "^1.4.1",
-    "tailwindcss": "^4.1.17"
+    "tailwindcss": "^4.1.17",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
