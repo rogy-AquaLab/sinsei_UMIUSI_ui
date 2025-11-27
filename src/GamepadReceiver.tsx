@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { Message, Topic } from 'roslib'
+import { Topic } from 'roslib'
 import { type GamepadRef, useGamepads } from 'react-ts-gamepads'
 import { RosContext } from './providers/RosProvider'
 
@@ -56,7 +56,7 @@ const GamepadReceiver = () => {
     const serialized = JSON.stringify(targetPayload)
     if (serialized === lastPublished.current) return
     lastPublished.current = serialized
-    targetTopic.publish(new Message(targetPayload))
+    targetTopic.publish(targetPayload)
   }, [targetPayload, targetTopic])
 
   return (

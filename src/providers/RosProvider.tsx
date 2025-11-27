@@ -8,7 +8,7 @@ import {
   type PropsWithChildren,
   useContext,
 } from 'react'
-import * as ROSLIB from 'roslib'
+import { Ros } from 'roslib'
 import { ToastContext } from './ToastProvider'
 
 type RosConnectionState =
@@ -19,7 +19,7 @@ type RosConnectionState =
   | 'connected'
 
 type RosContextValue = {
-  ros: ROSLIB.Ros | null
+  ros: Ros | null
   connectionState: RosConnectionState
   connect: () => void
   disconnect: () => void
@@ -43,7 +43,7 @@ type RosProviderProps = PropsWithChildren<{
  * rosbridgeとの接続を管理するプロバイダーコンポーネント
  */
 const RosProvider = ({ children, url }: RosProviderProps) => {
-  const rosRef = useRef<ROSLIB.Ros | null>(null)
+  const rosRef = useRef<Ros | null>(null)
   const [connectionState, setConnectionState] =
     useState<RosConnectionState>('disconnected')
   // コールバック関数内で最新のconnectionStateを参照できるようにするためのref
@@ -56,7 +56,7 @@ const RosProvider = ({ children, url }: RosProviderProps) => {
   const handlersRef = useRef<{
     handleConnection: () => void
     handleClose: () => void
-    handleError: (error: Event) => void
+    handleError: () => void
   } | null>(null)
 
   const detachHandlers = useCallback(() => {
@@ -79,7 +79,7 @@ const RosProvider = ({ children, url }: RosProviderProps) => {
     console.log('Connecting to rosbridge server at:', url)
     setConnectionState('connecting')
 
-    const ros = new ROSLIB.Ros({ url })
+    const ros = new Ros({ url })
     rosRef.current = ros
 
     const handleConnection = () => {
