@@ -6,6 +6,7 @@ import {
 } from 'react'
 import { FaInfoCircle, FaCheck, FaExclamationTriangle } from 'react-icons/fa'
 import { FaXmark } from 'react-icons/fa6'
+import { v4 as uuidv4 } from 'uuid'
 
 type ToastType = 'info' | 'success' | 'warning' | 'error'
 
@@ -26,7 +27,7 @@ const ToastProvider = ({ children }: PropsWithChildren) => {
   const [toasts, setToasts] = useState<Toast[]>([])
 
   const addToast = (message: string, type: ToastType = 'info') => {
-    const id = crypto.randomUUID()
+    const id = uuidv4()
 
     const timestamp = new Date().toLocaleTimeString([], {
       hour: '2-digit',
