@@ -73,7 +73,7 @@ const ToastProvider = ({ children }: PropsWithChildren) => {
             <div
               key={toast.id}
               role="alert"
-              className={`alert alert-outline ${getAlertClass(toast.type)}`}
+              className={`alert alert-soft ${getAlertClass(toast.type)}`}
             >
               <span className="text-base-content/50">{toast.timestamp}</span>
               {icons[toast.type]}
