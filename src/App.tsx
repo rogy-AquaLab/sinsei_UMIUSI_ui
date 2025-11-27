@@ -22,7 +22,7 @@ function App() {
                     height={768}
                   />
                 </div>
-                <div className="w-[200px] min-w-0 min-h-0">
+                <div className="w-[400px] min-w-0 min-h-0">
                   <GamepadReceiver />
                 </div>
               </div>
