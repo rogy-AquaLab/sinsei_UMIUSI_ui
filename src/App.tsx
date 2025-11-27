@@ -8,7 +8,7 @@ import CameraViewer from './components/CameraViewer'
 function App() {
   return (
     <ToastProvider>
-      <RosProvider url="ws://localhost:9090">
+      <RosProvider url="ws://umiusi2.local:9090">
         <GamepadsProvider>
           <div className="flex flex-col h-screen overflow-hidden">
             <NavBar />
