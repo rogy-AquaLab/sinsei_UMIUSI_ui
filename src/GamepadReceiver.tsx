@@ -41,11 +41,11 @@ const GamepadReceiver = () => {
       velocity: {
         x: -1 * getAxis(1),
         y: -1 * getAxis(0),
-        z: 0.0,
+        z: -1 * getAxis(3),
       },
       orientation: {
-        x: -0.0,
-        y: -1 * getAxis(3),
+        x: 0.0,
+        y: 0.0,
         z: -1 * getAxis(2),
       },
     }
