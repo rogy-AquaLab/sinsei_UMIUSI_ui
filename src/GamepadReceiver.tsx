@@ -2,15 +2,30 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Topic } from 'roslib'
 import { type GamepadRef, useGamepads } from 'react-ts-gamepads'
 import { RosContext } from './providers/RosProvider'
+import { ToastContext } from './providers/ToastProvider'
 
 const applyDeadzone = (value: number, threshold = 0.1) =>
   Math.abs(value) <= threshold ? 0 : value
 
 const GamepadReceiver = () => {
   const [gamepads, setGamepads] = useState<GamepadRef>({})
+  const [autoGateState, setAutoGateState] = useState<
+    'idle' | 'phase1' | 'phase2' | 'phase3'
+  >('idle')
+  const [autoSlalomState, setAutoSlalomState] = useState<
+    | 'idle'
+    | 'phase1' // 直進
+    | 'phase2' // 右並進
+    | 'phase3' // 直進
+    | 'phase4' // 左並進
+    | 'phase5' // 直進
+    | 'phase6' // 右並進
+  >('idle')
   useGamepads((gp) => setGamepads(gp))
   const { ros } = useContext(RosContext)
   const lastPublished = useRef<string>('')
+  const autoTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const prevButtons = useRef({ a: false, b: false, x: false, y: false })
   const zeroPayload = useMemo(
     () => ({
       velocity: { x: 0, y: 0, z: 0 },
@@ -18,6 +33,8 @@ const GamepadReceiver = () => {
     }),
     [],
   )
+
+  const toast = useContext(ToastContext)
 
   const firstPad = useMemo(() => {
     const firstId = Object.keys(gamepads)[0]
@@ -35,6 +52,56 @@ const GamepadReceiver = () => {
 
   const targetPayload = useMemo(() => {
     if (!firstPad) return zeroPayload
+
+    if (autoGateState === 'phase1') {
+      return {
+        velocity: { x: 0, y: 0, z: -1.0 },
+        orientation: { x: 0, y: 0, z: 0 },
+      }
+    }
+
+    if (autoGateState === 'phase2') {
+      return {
+        velocity: { x: 0.5, y: 0, z: 0 },
+        orientation: { x: 0, y: 0, z: 0 },
+      }
+    }
+
+    if (autoGateState === 'phase3') {
+      return {
+        velocity: { x: 0, y: 0, z: 1.0 },
+        orientation: { x: 0, y: 0, z: 0 },
+      }
+    }
+
+    // 直進
+    if (
+      autoSlalomState === 'phase1' ||
+      autoSlalomState === 'phase3' ||
+      autoSlalomState === 'phase5'
+    ) {
+      return {
+        velocity: { x: 0.5, y: 0, z: 0 },
+        orientation: { x: 0, y: 0, z: 0 },
+      }
+    }
+
+    // 右並進
+    if (autoSlalomState === 'phase2') {
+      return {
+        velocity: { x: 0, y: -0.3, z: 0 },
+        orientation: { x: 0, y: 0, z: 0 },
+      }
+    }
+
+    // 左並進
+    if (autoSlalomState === 'phase4') {
+      return {
+        velocity: { x: 0, y: 0.3, z: 0 },
+        orientation: { x: 0, y: 0, z: 0 },
+      }
+    }
+
     const axes = firstPad.axes ?? []
     const getAxis = (index: number) => applyDeadzone(axes[index] ?? 0)
     const lStickX = getAxis(0)
@@ -60,7 +127,129 @@ const GamepadReceiver = () => {
         z: -0.2 * lStickX,
       },
     }
-  }, [firstPad, zeroPayload])
+  }, [autoGateState, autoSlalomState, firstPad, zeroPayload])
+
+  const clearAutoGateTimeout = () => {
+    if (autoTimeout.current) {
+      clearTimeout(autoTimeout.current)
+      autoTimeout.current = null
+    }
+  }
+
+  const clearAutoSlalomTimeout = () => {
+    if (autoTimeout.current) {
+      clearTimeout(autoTimeout.current)
+      autoTimeout.current = null
+    }
+  }
+
+  useEffect(() => {
+    if (!firstPad) return
+
+    const buttons = firstPad.buttons ?? []
+    const aPressed = buttons[0]?.pressed ?? false
+    const bPressed = buttons[1]?.pressed ?? false
+    const xPressed = buttons[2]?.pressed ?? false
+    const yPressed = buttons[3]?.pressed ?? false
+
+    const stopAutoGate = () => {
+      if (autoGateState === 'idle') {
+        toast?.show('自動ゲート操作は実行中ではありません。', 'info')
+        return
+      }
+      clearAutoGateTimeout()
+      setAutoGateState('idle')
+      toast?.show('自動ゲート操作を停止しました。', 'info')
+    }
+
+    const startAutoGate = () => {
+      if (autoGateState !== 'idle') {
+        toast?.show('自動ゲート操作は既に実行中です。', 'info')
+        return
+      }
+
+      toast?.show('自動ゲート操作を開始します。', 'info')
+
+      clearAutoGateTimeout()
+      setAutoGateState('phase1')
+
+      autoTimeout.current = setTimeout(() => {
+        setAutoGateState('phase2')
+        autoTimeout.current = setTimeout(() => {
+          setAutoGateState('phase3')
+          autoTimeout.current = setTimeout(() => {
+            setAutoGateState('idle')
+            autoTimeout.current = null
+            toast?.show('自動ゲート操作を終了しました。', 'success')
+          }, 10000)
+        }, 10000)
+      }, 10000)
+    }
+
+    const startAutoSlalom = () => {
+      if (autoSlalomState !== 'idle') {
+        toast?.show('自動スラローム操作は既に実行中です。', 'info')
+        return
+      }
+
+      toast?.show('自動スラローム操作を開始します。', 'info')
+
+      const phase1Duration = 3000
+      const phase2Duration = 5000
+      const phase3Duration = 3000
+      const phase4Duration = 5000
+      const phase5Duration = 3000
+      const phase6Duration = 5000
+
+      clearAutoGateTimeout()
+      setAutoSlalomState('phase1')
+      autoTimeout.current = setTimeout(() => {
+        setAutoSlalomState('phase2')
+        autoTimeout.current = setTimeout(() => {
+          setAutoSlalomState('phase3')
+          autoTimeout.current = setTimeout(() => {
+            setAutoSlalomState('phase4')
+            autoTimeout.current = setTimeout(() => {
+              setAutoSlalomState('phase5')
+              autoTimeout.current = setTimeout(() => {
+                setAutoSlalomState('phase6')
+                autoTimeout.current = setTimeout(() => {
+                  setAutoSlalomState('idle')
+                  autoTimeout.current = null
+                  toast?.show('自動スラローム操作を終了しました。', 'success')
+                }, phase6Duration)
+              }, phase5Duration)
+            }, phase4Duration)
+          }, phase3Duration)
+        }, phase2Duration)
+      }, phase1Duration)
+    }
+
+    const stopAutoSlalom = () => {
+      if (autoSlalomState === 'idle') {
+        toast?.show('自動スラローム操作は実行中ではありません。', 'info')
+        return
+      }
+      clearAutoSlalomTimeout()
+      setAutoSlalomState('idle')
+      toast?.show('自動スラローム操作を停止しました。', 'info')
+    }
+
+    if (aPressed && !prevButtons.current.a) startAutoGate()
+    if (bPressed && !prevButtons.current.b) startAutoSlalom()
+    if (xPressed && !prevButtons.current.x) {
+      if (autoGateState !== 'idle') stopAutoGate()
+      if (autoSlalomState !== 'idle') stopAutoSlalom()
+    }
+
+    prevButtons.current = { a: aPressed, b: bPressed, x: xPressed, y: yPressed }
+  }, [autoGateState, autoSlalomState, firstPad, firstPad?.buttons, toast])
+
+  useEffect(() => {
+    return () => {
+      clearAutoGateTimeout()
+    }
+  }, [])
 
   useEffect(() => {
     if (!(targetTopic && targetPayload)) return
@@ -73,6 +262,45 @@ const GamepadReceiver = () => {
   return (
     <div className="Gamepads">
       <h1>Gamepads</h1>
+      <div
+        className={autoGateState === 'idle' ? '' : 'font-bold text-green-600'}
+      >
+        自動ゲート操作: {autoGateState === 'idle' ? '停止中' : '実行中'}
+      </div>
+      {autoGateState !== 'idle' && (
+        <div>
+          状態:{' '}
+          {autoGateState === 'phase1'
+            ? '下降中 (10秒)'
+            : autoGateState === 'phase2'
+              ? '前進中 (10秒)'
+              : '上昇中 (10秒)'}
+        </div>
+      )}
+
+      <div
+        className={autoSlalomState === 'idle' ? '' : 'font-bold text-green-600'}
+      >
+        自動スラローム操作: {autoSlalomState === 'idle' ? '停止中' : '実行中'}
+      </div>
+      {autoSlalomState !== 'idle' && (
+        <div>
+          状態:{' '}
+          {autoSlalomState === 'phase1'
+            ? '直進:1'
+            : autoSlalomState === 'phase2'
+              ? '右並進:2'
+              : autoSlalomState === 'phase3'
+                ? '直進:3'
+                : autoSlalomState === 'phase4'
+                  ? '左並進:4'
+                  : autoSlalomState === 'phase5'
+                    ? '直進:5'
+                    : autoSlalomState === 'phase6'
+                      ? '右並進:6'
+                      : ''}
+        </div>
+      )}
 
       {Object.keys(gamepads).map((idStr) => {
         const id = Number(idStr)
