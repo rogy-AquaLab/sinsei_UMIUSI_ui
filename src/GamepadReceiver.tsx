@@ -37,16 +37,27 @@ const GamepadReceiver = () => {
     if (!firstPad) return zeroPayload
     const axes = firstPad.axes ?? []
     const getAxis = (index: number) => applyDeadzone(axes[index] ?? 0)
+    const lStickX = getAxis(0)
+    const lStickY = getAxis(1)
+    const rStickX = getAxis(2)
+    const rStickY = getAxis(3)
+
+    const buttons = firstPad.buttons ?? []
+    const lButtonPressed = (buttons[6]?.pressed ?? false) ? 1 : 0
+    const rButtonPressed = (buttons[7]?.pressed ?? false) ? 1 : 0
+    const leftButtonPressed = (buttons[14]?.pressed ?? false) ? 1 : 0
+    const rightButtonPressed = (buttons[15]?.pressed ?? false) ? 1 : 0
+
     return {
       velocity: {
-        x: -1 * getAxis(1),
-        y: -1 * getAxis(0),
-        z: -1 * getAxis(3),
+        x: -1 * lStickY,
+        y: leftButtonPressed ? 0.5 : rightButtonPressed ? -0.5 : 0.0,
+        z: lButtonPressed ? 0.3 : rButtonPressed ? -0.3 : 0.0,
       },
       orientation: {
-        x: 0.0,
-        y: 0.0,
-        z: -1 * getAxis(2),
+        x: 0.3 * rStickX,
+        y: -0.3 * rStickY,
+        z: -0.2 * lStickX,
       },
     }
   }, [firstPad, zeroPayload])
