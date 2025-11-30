@@ -55,21 +55,21 @@ const GamepadReceiver = () => {
 
     if (autoGateState === 'phase1') {
       return {
-        velocity: { x: 0, y: 0, z: -1.0 },
+        velocity: { x: 0, y: 0, z: 0.5 },
         orientation: { x: 0, y: 0, z: 0 },
       }
     }
 
     if (autoGateState === 'phase2') {
       return {
-        velocity: { x: 0.5, y: 0, z: 0 },
+        velocity: { x: 0.3, y: 0, z: 0 },
         orientation: { x: 0, y: 0, z: 0 },
       }
     }
 
     if (autoGateState === 'phase3') {
       return {
-        velocity: { x: 0, y: 0, z: 1.0 },
+        velocity: { x: 0, y: 0, z: 0.3 },
         orientation: { x: 0, y: 0, z: 0 },
       }
     }
@@ -81,7 +81,7 @@ const GamepadReceiver = () => {
       autoSlalomState === 'phase5'
     ) {
       return {
-        velocity: { x: 0.5, y: 0, z: 0 },
+        velocity: { x: 0.2, y: 0, z: 0 },
         orientation: { x: 0, y: 0, z: 0 },
       }
     }
@@ -89,7 +89,7 @@ const GamepadReceiver = () => {
     // 右並進
     if (autoSlalomState === 'phase2') {
       return {
-        velocity: { x: 0, y: -0.3, z: 0 },
+        velocity: { x: 0, y: -0.2, z: 0 },
         orientation: { x: 0, y: 0, z: 0 },
       }
     }
@@ -97,7 +97,7 @@ const GamepadReceiver = () => {
     // 左並進
     if (autoSlalomState === 'phase4') {
       return {
-        velocity: { x: 0, y: 0.3, z: 0 },
+        velocity: { x: 0, y: 0.2, z: 0 },
         orientation: { x: 0, y: 0, z: 0 },
       }
     }
@@ -182,8 +182,8 @@ const GamepadReceiver = () => {
             autoTimeout.current = null
             toast?.show('自動ゲート操作を終了しました。', 'success')
           }, 10000)
-        }, 10000)
-      }, 10000)
+        }, 6000)
+      }, 0)
     }
 
     const startAutoSlalom = () => {
@@ -194,12 +194,12 @@ const GamepadReceiver = () => {
 
       toast?.show('自動スラローム操作を開始します。', 'info')
 
-      const phase1Duration = 3000
-      const phase2Duration = 5000
-      const phase3Duration = 3000
-      const phase4Duration = 5000
-      const phase5Duration = 3000
-      const phase6Duration = 5000
+      const phase1Duration = 8000
+      const phase2Duration = 25000
+      const phase3Duration = 8000
+      const phase4Duration = 30000
+      const phase5Duration = 8000
+      const phase6Duration = 15000
 
       clearAutoGateTimeout()
       setAutoSlalomState('phase1')
