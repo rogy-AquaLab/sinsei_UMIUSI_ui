@@ -1,6 +1,6 @@
+import { FaBars } from 'react-icons/fa'
 import RosConnectionStatus from './RosConnectionStatus'
 import RosConnectButton from './RosConnectButton'
-import { FaBars } from 'react-icons/fa'
 
 const DropdownMenu = () => {
   return (
