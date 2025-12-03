@@ -1,5 +1,4 @@
 import { useContext } from 'react'
-import { FaCircle } from 'react-icons/fa'
 import { RosContext } from '../providers/RosProvider'
 
 const RosConnectionStatus = () => {
@@ -10,27 +9,32 @@ const RosConnectionStatus = () => {
     connectionState === 'disconnecting' ||
     connectionState === 'cancel_connecting'
 
-  let label: string, tone: string
+  let label: string, badgeTone: string, statusTone: string
   switch (connectionState) {
     case 'connected':
       label = 'Connected'
-      tone = 'badge-success'
+      badgeTone = 'badge-success'
+      statusTone = 'status-success'
       break
     case 'disconnecting':
       label = 'Disconnecting...'
-      tone = 'badge-warning'
+      badgeTone = 'badge-warning'
+      statusTone = 'status-warning'
       break
     case 'connecting':
       label = 'Connecting...'
-      tone = 'badge-warning'
+      badgeTone = 'badge-warning'
+      statusTone = 'status-warning'
       break
     case 'disconnected':
       label = 'Disconnected'
-      tone = 'badge-error'
+      badgeTone = 'badge-error'
+      statusTone = 'status-error'
       break
     case 'cancel_connecting':
       label = 'Cancelling...'
-      tone = 'badge-warning'
+      badgeTone = 'badge-warning'
+      statusTone = 'status-warning'
       break
   }
 
@@ -38,12 +42,12 @@ const RosConnectionStatus = () => {
     <div
       role="status"
       aria-live="polite"
-      className={`badge badge-soft ${tone}`}
+      className={`badge badge-soft ${badgeTone}`}
     >
       {isLoading ? (
         <span className="loading loading-spinner loading-xs"></span>
       ) : (
-        <FaCircle />
+        <div className={`status ${statusTone}`}></div>
       )}
       {label}
     </div>
