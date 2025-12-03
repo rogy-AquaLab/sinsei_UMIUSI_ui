@@ -5,12 +5,12 @@ import UrlInput from './UrlInput'
 const Drawer = ({ children }: PropsWithChildren) => {
   return (
     <div className="drawer drawer-end lg:drawer-open">
-      <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
+      <input id="my-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content">{children}</div>
 
       <div className="drawer-side is-drawer-close:overflow-visible">
         <label
-          htmlFor="my-drawer-4"
+          htmlFor="my-drawer"
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>

@@ -18,7 +18,7 @@ const NavBar = () => {
         <div className="flex items-center gap-5">
           <RosConnectionStatus />
           <label
-            htmlFor="my-drawer-4"
+            htmlFor="my-drawer"
             aria-label="open sidebar"
             className="btn btn-square"
           >
