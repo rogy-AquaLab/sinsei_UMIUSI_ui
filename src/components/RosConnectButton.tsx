@@ -1,4 +1,5 @@
 import { useContext } from 'react'
+import { FaPlug } from 'react-icons/fa'
 import { RosContext } from '../providers/RosProvider'
 
 const RosConnectButton = () => {
@@ -9,12 +10,12 @@ const RosConnectButton = () => {
   switch (connectionState) {
     case 'disconnected':
       handleClick = connect
-      label = 'Connect'
+      label = 'Connect to rosbridge'
       tone = 'text-primary'
       break
     case 'connecting':
       handleClick = disconnect
-      label = 'Cancel'
+      label = 'Cancel connecting'
       tone = 'text-warning'
       break
     case 'disconnecting':
@@ -29,15 +30,20 @@ const RosConnectButton = () => {
       break
     case 'connected':
       handleClick = disconnect
-      label = 'Disconnect'
+      label = 'Disconnect from rosbridge'
       tone = 'text-error'
       break
   }
 
   return (
-    <a className={tone} onClick={handleClick}>
-      {label}
-    </a>
+    <button
+      className={`is-drawer-close:tooltip is-drawer-close:tooltip-left ${tone}`}
+      data-tip={label}
+      onClick={handleClick}
+    >
+      <FaPlug className="my-1.5 inline-block size-4" />
+      <span className="is-drawer-close:hidden">{label}</span>
+    </button>
   )
 }
 
