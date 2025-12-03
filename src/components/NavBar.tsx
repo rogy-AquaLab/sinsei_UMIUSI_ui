@@ -1,33 +1,5 @@
-import { FaBars } from 'react-icons/fa'
+import { FaAngleLeft } from 'react-icons/fa'
 import RosConnectionStatus from './RosConnectionStatus'
-import RosConnectButton from './RosConnectButton'
-
-const DropdownMenu = () => {
-  return (
-    <div className="dropdown dropdown-end">
-      <button tabIndex={0} className="btn">
-        <FaBars />
-      </button>
-      <ul
-        tabIndex={-1}
-        className="menu dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
-      >
-        <li>
-          <h2 className="menu-title">rosbridge</h2>
-          <ul>
-            <li>
-              <RosConnectButton />
-            </li>
-          </ul>
-          <h2 className="menu-title">Others</h2>
-          <ul>
-            <li>...</li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-  )
-}
 
 const NavBar = () => {
   return (
@@ -45,7 +17,13 @@ const NavBar = () => {
       <div className="navbar-end">
         <div className="flex items-center gap-5">
           <RosConnectionStatus />
-          <DropdownMenu />
+          <label
+            htmlFor="my-drawer-4"
+            aria-label="open sidebar"
+            className="btn btn-square"
+          >
+            <FaAngleLeft />
+          </label>
         </div>
       </div>
     </div>

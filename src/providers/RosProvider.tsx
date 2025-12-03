@@ -23,6 +23,8 @@ type RosContextValue = {
   connectionState: RosConnectionState
   connect: () => void
   disconnect: () => void
+  url: string
+  setUrl: (url: string) => void
 }
 
 const RosContext = createContext<RosContextValue>({
@@ -30,6 +32,8 @@ const RosContext = createContext<RosContextValue>({
   connectionState: 'disconnected',
   connect: () => {},
   disconnect: () => {},
+  url: '',
+  setUrl: () => {},
 })
 
 type RosProviderProps = PropsWithChildren<{
@@ -42,8 +46,9 @@ type RosProviderProps = PropsWithChildren<{
 /**
  * rosbridgeとの接続を管理するプロバイダーコンポーネント
  */
-const RosProvider = ({ children, url }: RosProviderProps) => {
+const RosProvider = ({ children, url: initialUrl }: RosProviderProps) => {
   const rosRef = useRef<Ros | null>(null)
+  const [url, setUrl] = useState(initialUrl)
   const [connectionState, setConnectionState] =
     useState<RosConnectionState>('disconnected')
   // コールバック関数内で最新のconnectionStateを参照できるようにするためのref
@@ -170,8 +175,10 @@ const RosProvider = ({ children, url }: RosProviderProps) => {
       connectionState,
       connect,
       disconnect,
+      url,
+      setUrl,
     }),
-    [connectionState, connect, disconnect],
+    [connectionState, connect, disconnect, url],
   )
 
   return <RosContext value={contextValue}>{children}</RosContext>
