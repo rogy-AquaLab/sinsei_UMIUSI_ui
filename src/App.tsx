@@ -1,6 +1,6 @@
 import { GamepadsProvider } from 'react-ts-gamepads'
-import RosProvider from './providers/RosProvider'
-import ToastProvider from './providers/ToastProvider'
+import { RosProvider } from './contexts/RosContext'
+import { ToastProvider } from './contexts/ToastContext'
 import NavBar from './components/NavBar'
 import Drawer from './components/Drawer'
 import CameraViewer from './components/CameraViewer'

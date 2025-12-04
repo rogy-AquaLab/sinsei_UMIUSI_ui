@@ -9,7 +9,7 @@ import {
   useContext,
 } from 'react'
 import { Ros } from 'roslib'
-import { ToastContext } from './ToastProvider'
+import { ToastContext } from './ToastContext'
 
 type RosConnectionState =
   | 'disconnected'
@@ -184,5 +184,4 @@ const RosProvider = ({ children, url: initialUrl }: RosProviderProps) => {
   return <RosContext value={contextValue}>{children}</RosContext>
 }
 
-export default RosProvider
-export { RosContext }
+export { RosProvider, RosContext }
