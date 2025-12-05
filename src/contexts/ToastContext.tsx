@@ -92,5 +92,4 @@ const ToastProvider = ({ children }: PropsWithChildren) => {
   )
 }
 
-export default ToastProvider
-export { ToastContext }
+export { ToastProvider, ToastContext }

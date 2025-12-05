@@ -1,5 +1,6 @@
 import { FaAngleLeft } from 'react-icons/fa'
 import RosConnectionStatus from './RosConnectionStatus'
+import GamepadStatusIcon from './GamepadStatusIcon'
 
 const NavBar = () => {
   return (
@@ -16,6 +17,7 @@ const NavBar = () => {
       </div>
       <div className="navbar-end">
         <div className="flex items-center gap-5">
+          <GamepadStatusIcon />
           <RosConnectionStatus />
           <label
             htmlFor="my-drawer"

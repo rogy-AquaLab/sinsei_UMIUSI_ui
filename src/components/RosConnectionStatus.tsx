@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { RosContext } from '../providers/RosProvider'
+import { RosContext } from '../contexts/RosContext'
 
 const RosConnectionStatus = () => {
   const { connectionState } = useContext(RosContext)
