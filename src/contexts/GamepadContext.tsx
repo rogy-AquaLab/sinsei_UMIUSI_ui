@@ -52,35 +52,39 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
         const next = { ...prev }
         delete next[gamepad.index]
 
-        toast?.show(`Gamepad disconnected: ${gamepad.id}`, 'info')
-
-        // If the removed gamepad was selected, select another one or null
-        setSelectedIndex((currentIndex) => {
-          if (currentIndex !== gamepad.index) return currentIndex
-          const remaining = Object.values(next)
-          return remaining.length > 0 ? remaining[0].index : null
-        })
+        // If the removed gamepad was the selected one, update selection
+        if (selectedIndex === gamepad.index) {
+          setSelectedIndex(() => {
+            const remainingIndices = Object.keys(next).map(Number)
+            return remainingIndices.length > 0 ? remainingIndices[0] : null
+          })
+        }
 
         return next
       })
+
+      toast?.show(`Gamepad disconnected: ${gamepad.id}`, 'info')
     },
-    [toast],
+    [toast, selectedIndex],
   )
 
   useEffect(() => {
     const detectedGamepads = navigator.getGamepads?.() ?? []
+    const newlyAdded: Gamepad[] = []
     setGamepads((prev) => {
       const next = { ...prev }
 
-      // Add newly detected gamepads
       detectedGamepads.forEach((gamepad) => {
         if (gamepad && !(gamepad.index in next)) {
           next[gamepad.index] = gamepad
-          addGamepad(gamepad)
+          newlyAdded.push(gamepad)
         }
       })
 
       return next
+    })
+    newlyAdded.forEach((gamepad) => {
+      addGamepad(gamepad)
     })
 
     const connectGamepadHandler = (e: GamepadEvent) => {
