@@ -4,14 +4,14 @@ import { GamepadContext } from '../../contexts/GamepadContext'
 const DEFAULT_TEXT = 'No Gamepad Connected'
 
 const GamepadSelect = () => {
-  const { gamepadInUse, gamepads, selectGamepadByIndex } =
+  const { gamepads, selectedIndex, selectGamepadByIndex } =
     useContext(GamepadContext)
 
   return (
     <select
       className="select"
       disabled={Object.keys(gamepads).length === 0}
-      value={gamepadInUse?.index ?? DEFAULT_TEXT}
+      value={selectedIndex ?? DEFAULT_TEXT}
       onChange={(e) => {
         const index = e.target.value ? Number(e.target.value) : null
         selectGamepadByIndex?.(index)

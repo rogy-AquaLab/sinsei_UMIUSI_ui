@@ -15,14 +15,15 @@ import { ToastContext } from './ToastContext'
 type Gamepads = Record<Gamepad['index'], Gamepad>
 
 type GamepadContextValue = {
-  gamepadInUse: Gamepad | null
   gamepads: Gamepads
-  selectGamepadByIndex?: (index: Gamepad['index'] | null) => void
+  selectedIndex: Gamepad['index'] | null
+  selectGamepadByIndex: ((index: Gamepad['index'] | null) => void) | null
 }
 
 const GamepadContext = createContext<GamepadContextValue>({
-  gamepadInUse: null,
   gamepads: {},
+  selectedIndex: null,
+  selectGamepadByIndex: null,
 })
 
 const GamepadProvider = ({ children }: PropsWithChildren) => {
@@ -132,11 +133,11 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
 
   const contextValue = useMemo<GamepadContextValue>(
     () => ({
-      gamepadInUse: selectedIndex !== null ? gamepads[selectedIndex] : null,
       gamepads,
+      selectedIndex,
       selectGamepadByIndex,
     }),
-    [gamepads, selectGamepadByIndex, selectedIndex],
+    [gamepads, selectedIndex, selectGamepadByIndex],
   )
 
   return <GamepadContext value={contextValue}>{children}</GamepadContext>
