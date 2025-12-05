@@ -18,7 +18,6 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-icons": "^5.5.0",
-    "react-ts-gamepads": "^1.0.8",
     "roslib": "^1.4.1",
     "tailwindcss": "^4.1.17",
     "uuid": "^13.0.0"

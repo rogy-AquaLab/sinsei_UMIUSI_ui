@@ -1,6 +1,6 @@
-import { GamepadsProvider } from 'react-ts-gamepads'
-import { RosProvider } from './contexts/RosContext'
 import { ToastProvider } from './contexts/ToastContext'
+import { RosProvider } from './contexts/RosContext'
+import { GamepadProvider } from './contexts/GamepadContext'
 import NavBar from './components/NavBar'
 import Drawer from './components/Drawer'
 import CameraViewer from './components/CameraViewer'
@@ -9,7 +9,7 @@ function App() {
   return (
     <ToastProvider>
       <RosProvider url="ws://umiusi2.local:9090">
-        <GamepadsProvider>
+        <GamepadProvider>
           <Drawer>
             <div className="flex flex-col h-screen overflow-hidden">
               <NavBar />
@@ -35,7 +35,7 @@ function App() {
               </div>
             </div>
           </Drawer>
-        </GamepadsProvider>
+        </GamepadProvider>
       </RosProvider>
     </ToastProvider>
   )
