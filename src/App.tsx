@@ -1,8 +1,15 @@
+import { useContext } from 'react'
 import NavBar from './components/NavBar'
 import Drawer from './components/Drawer'
 import CameraViewer from './components/CameraViewer'
+import { useGamepadPublisher } from './hooks/useGamepadPublisher'
+import { RosContext } from './contexts/RosContext'
 
 function App() {
+  const { ros } = useContext(RosContext)
+
+  useGamepadPublisher({ ros })
+
   return (
     <Drawer>
       <div className="flex flex-col h-screen overflow-hidden">

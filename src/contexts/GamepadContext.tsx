@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type PropsWithChildren,
 } from 'react'
@@ -16,13 +17,12 @@ type Gamepads = Record<Gamepad['index'], Gamepad>
 type GamepadContextValue = {
   gamepadInUse: Gamepad | null
   gamepads: Gamepads
-  setGamepadIndex?: (index: Gamepad['index'] | null) => void
+  selectGamepadByIndex?: (index: Gamepad['index'] | null) => void
 }
 
 const GamepadContext = createContext<GamepadContextValue>({
   gamepadInUse: null,
   gamepads: {},
-  setGamepadIndex: () => {},
 })
 
 const GamepadProvider = ({ children }: PropsWithChildren) => {
@@ -30,6 +30,8 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
   const [selectedIndex, setSelectedIndex] = useState<Gamepad['index'] | null>(
     null,
   )
+
+  const requestHandleRef = useRef<number | null>(null)
 
   const toast = useContext(ToastContext)
 
@@ -66,21 +68,31 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
     [toast],
   )
 
-  useEffect(() => {
-    // Add already connected gamepads (only ones not yet registered)
-    const existingGamepads = navigator.getGamepads?.() ?? []
+  const scanGamepads = useCallback(() => {
+    const detectedGamepads = navigator.getGamepads?.() ?? []
     setGamepads((prev) => {
       const next = { ...prev }
 
-      existingGamepads.forEach((gp) => {
-        if (gp && !(gp.index in next)) {
-          next[gp.index] = gp
-          addGamepad(gp)
+      // Add newly detected gamepads
+      detectedGamepads.forEach((gamepad) => {
+        if (gamepad && !(gamepad.index in next)) {
+          next[gamepad.index] = gamepad
+          addGamepad(gamepad)
         }
       })
 
       return next
     })
+  }, [addGamepad])
+
+  const update = useCallback(() => {
+    scanGamepads()
+
+    requestHandleRef.current = requestAnimationFrame(update)
+  }, [scanGamepads])
+
+  useEffect(() => {
+    scanGamepads()
 
     const connectGamepadHandler = (e: GamepadEvent) => {
       addGamepad(e.gamepad)
@@ -93,26 +105,38 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
     window.addEventListener('gamepadconnected', connectGamepadHandler)
     window.addEventListener('gamepaddisconnected', disconnectGamepadHandler)
 
+    requestHandleRef.current = requestAnimationFrame(update)
+
     return () => {
       window.removeEventListener('gamepadconnected', connectGamepadHandler)
       window.removeEventListener(
         'gamepaddisconnected',
         disconnectGamepadHandler,
       )
-    }
-  }, [addGamepad, removeGamepad])
 
-  const contextValue = useMemo(
+      if (requestHandleRef.current)
+        cancelAnimationFrame(requestHandleRef.current)
+    }
+  }, [addGamepad, removeGamepad, scanGamepads, update])
+
+  const selectGamepadByIndex = useCallback(
+    (index: Gamepad['index'] | null) => {
+      if (index !== null && !(index in gamepads)) {
+        console.warn(`Gamepad with index ${index} not found`)
+        return
+      }
+      setSelectedIndex(index)
+    },
+    [gamepads],
+  )
+
+  const contextValue = useMemo<GamepadContextValue>(
     () => ({
-      gamepadInUse:
-        selectedIndex !== null
-          ? (Object.values(gamepads).find((g) => g.index === selectedIndex) ??
-            null)
-          : null,
+      gamepadInUse: selectedIndex !== null ? gamepads[selectedIndex] : null,
       gamepads,
-      setGamepadIndex: setSelectedIndex,
+      selectGamepadByIndex,
     }),
-    [gamepads, selectedIndex],
+    [gamepads, selectGamepadByIndex, selectedIndex],
   )
 
   return <GamepadContext value={contextValue}>{children}</GamepadContext>
