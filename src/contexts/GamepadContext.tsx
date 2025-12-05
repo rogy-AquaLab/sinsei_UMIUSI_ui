@@ -32,8 +32,6 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
     null,
   )
 
-  const requestHandleRef = useRef<number | null>(null)
-
   const toast = useContext(ToastContext)
 
   const addGamepad = useCallback(
@@ -69,7 +67,7 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
     [toast],
   )
 
-  const scanGamepads = useCallback(() => {
+  useEffect(() => {
     const detectedGamepads = navigator.getGamepads?.() ?? []
     setGamepads((prev) => {
       const next = { ...prev }
@@ -84,16 +82,6 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
 
       return next
     })
-  }, [addGamepad])
-
-  const update = useCallback(() => {
-    scanGamepads()
-
-    requestHandleRef.current = requestAnimationFrame(update)
-  }, [scanGamepads])
-
-  useEffect(() => {
-    scanGamepads()
 
     const connectGamepadHandler = (e: GamepadEvent) => {
       addGamepad(e.gamepad)
@@ -106,19 +94,14 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
     window.addEventListener('gamepadconnected', connectGamepadHandler)
     window.addEventListener('gamepaddisconnected', disconnectGamepadHandler)
 
-    requestHandleRef.current = requestAnimationFrame(update)
-
     return () => {
       window.removeEventListener('gamepadconnected', connectGamepadHandler)
       window.removeEventListener(
         'gamepaddisconnected',
         disconnectGamepadHandler,
       )
-
-      if (requestHandleRef.current)
-        cancelAnimationFrame(requestHandleRef.current)
     }
-  }, [addGamepad, removeGamepad, scanGamepads, update])
+  }, [addGamepad, removeGamepad])
 
   const selectGamepadByIndex = useCallback(
     (index: Gamepad['index'] | null) => {
