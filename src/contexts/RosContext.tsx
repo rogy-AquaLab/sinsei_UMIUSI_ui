@@ -61,7 +61,7 @@ const RosProvider = ({ children, url: initialUrl }: RosProviderProps) => {
   const handlersRef = useRef<{
     handleConnection: () => void
     handleClose: () => void
-    handleError: (error: Event) => void
+    handleError: () => void
   } | null>(null)
 
   const detachHandlers = useCallback(() => {
