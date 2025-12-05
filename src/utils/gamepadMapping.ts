@@ -6,19 +6,19 @@ type GamepadInput = {
   }
   buttons: {
     arrows: {
-      up: boolean
-      down: boolean
-      left: boolean
-      right: boolean
+      up: GamepadButton
+      down: GamepadButton
+      left: GamepadButton
+      right: GamepadButton
     }
-    a: boolean
-    b: boolean
-    x: boolean
-    y: boolean
-    l1: boolean
-    l2: boolean
-    r1: boolean
-    r2: boolean
+    a: GamepadButton
+    b: GamepadButton
+    x: GamepadButton
+    y: GamepadButton
+    l1: GamepadButton
+    l2: GamepadButton
+    r1: GamepadButton
+    r2: GamepadButton
   }
 }
 
@@ -32,19 +32,19 @@ export const mapGamepad = ({ axes, buttons }: Gamepad): GamepadInput => {
     },
     buttons: {
       arrows: {
-        up: buttons[12]?.pressed ?? false,
-        down: buttons[13]?.pressed ?? false,
-        left: buttons[14]?.pressed ?? false,
-        right: buttons[15]?.pressed ?? false,
+        up: buttons[12],
+        down: buttons[13],
+        left: buttons[14],
+        right: buttons[15],
       },
-      a: buttons[0]?.pressed ?? false,
-      b: buttons[1]?.pressed ?? false,
-      x: buttons[2]?.pressed ?? false,
-      y: buttons[3]?.pressed ?? false,
-      l1: buttons[4]?.pressed ?? false,
-      r1: buttons[5]?.pressed ?? false,
-      l2: buttons[6]?.pressed ?? false,
-      r2: buttons[7]?.pressed ?? false,
+      a: buttons[0],
+      b: buttons[1],
+      x: buttons[2],
+      y: buttons[3],
+      l1: buttons[4],
+      r1: buttons[5],
+      l2: buttons[6],
+      r2: buttons[7],
     },
   }
 }

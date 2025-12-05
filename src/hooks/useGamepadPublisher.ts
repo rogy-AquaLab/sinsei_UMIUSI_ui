@@ -44,8 +44,16 @@ export const useGamepadPublisher = ({
       const msg: TargetMessage = {
         velocity: {
           x: -1 * deadzone(axes.l.y),
-          y: buttons.arrows.left ? 0.5 : buttons.arrows.right ? -0.5 : 0.0,
-          z: buttons.l2 ? 0.3 : buttons.r2 ? -0.3 : 0.0,
+          y: buttons.arrows.left.pressed
+            ? 0.5
+            : buttons.arrows.right.pressed
+              ? -0.5
+              : 0.0,
+          z: buttons.l2.pressed
+            ? 0.3 * deadzone(buttons.l2.value)
+            : buttons.r2.pressed
+              ? -0.3 * deadzone(buttons.r2.value)
+              : 0.0,
         },
         orientation: {
           x: 0.3 * deadzone(axes.r.x),
