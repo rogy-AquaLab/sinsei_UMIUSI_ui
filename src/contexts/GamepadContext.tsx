@@ -45,26 +45,29 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
 
   const removeGamepad = useCallback(
     (gamepad: Gamepad) => {
+      let remainingIndexes: number[] = []
+
       setGamepads((prev) => {
         if (!(gamepad.index in prev)) return prev
 
         const next = { ...prev }
         delete next[gamepad.index]
 
-        // If the removed gamepad was the selected one, update selection
-        if (selectedIndex === gamepad.index) {
-          setSelectedIndex(() => {
-            const remainingIndices = Object.keys(next).map(Number)
-            return remainingIndices.length > 0 ? remainingIndices[0] : null
-          })
-        }
+        remainingIndexes = Object.keys(next).map((key) => Number(key))
 
         return next
       })
 
+      // 選択されているゲームパッドが切断された場合、別のゲームパッドを選択する
+      setSelectedIndex((current) => {
+        if (current !== gamepad.index) return current
+        if (remainingIndexes.length === 0) return null
+        return remainingIndexes[0]
+      })
+
       toast?.show(`Gamepad disconnected: ${gamepad.id}`, 'info')
     },
-    [toast, selectedIndex],
+    [toast],
   )
 
   useEffect(() => {
