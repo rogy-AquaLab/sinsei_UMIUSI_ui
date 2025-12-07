@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from 'react'
-import RosConnectButton from './RosConnectButton'
+import RosConnectButton from './drawer/RosConnectButton'
 import UrlInput from './drawer/UrlInput'
 import GamepadSelect from './drawer/GamepadSelect'
 

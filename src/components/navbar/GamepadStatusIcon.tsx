@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { FaGamepad } from 'react-icons/fa'
-import { GamepadContext } from '../contexts/GamepadContext'
+import { GamepadContext } from '../../contexts/GamepadContext'
 
 const GamepadStatusIcon = () => {
   const { gamepads, selectedIndex } = useContext(GamepadContext)

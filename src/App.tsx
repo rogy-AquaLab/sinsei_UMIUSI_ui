@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import NavBar from './components/NavBar'
+import Navbar from './components/Navbar'
 import Drawer from './components/Drawer'
 import CameraViewer from './components/CameraViewer'
 import { useGamepadPublisher } from './hooks/useGamepadPublisher'
@@ -13,7 +13,7 @@ function App() {
   return (
     <Drawer>
       <div className="flex flex-col h-screen overflow-hidden">
-        <NavBar />
+        <Navbar />
         <div className="flex-1 min-h-0">
           {/* <div className="flex flex-row w-full h-full">
           <div className="flex-1 min-w-0 min-h-0"> */}

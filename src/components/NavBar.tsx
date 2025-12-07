@@ -1,8 +1,8 @@
 import { FaAngleLeft } from 'react-icons/fa'
-import RosConnectionStatus from './RosConnectionStatus'
-import GamepadStatusIcon from './GamepadStatusIcon'
+import RosStatusBadge from './navbar/RosStatusBadge'
+import GamepadStatusIcon from './navbar/GamepadStatusIcon'
 
-const NavBar = () => {
+const Navbar = () => {
   return (
     <div className="navbar bg-base-100 shadow-sm">
       <div className="navbar-start">
@@ -18,7 +18,7 @@ const NavBar = () => {
       <div className="navbar-end">
         <div className="flex items-center gap-5">
           <GamepadStatusIcon />
-          <RosConnectionStatus />
+          <RosStatusBadge />
           <label
             htmlFor="my-drawer"
             aria-label="open sidebar"
@@ -32,4 +32,4 @@ const NavBar = () => {
   )
 }
 
-export default NavBar
+export default Navbar
