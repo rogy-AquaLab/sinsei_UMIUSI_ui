@@ -8,7 +8,7 @@ import { GamepadProvider } from './contexts/GamepadContext'
 
 createRoot(document.getElementById('root')!).render(
   <ToastProvider>
-    <RosProvider url="ws://umiusi2.local:9090">
+    <RosProvider url="ws://localhost:9090">
       <GamepadProvider>
         <StrictMode>
           <App />

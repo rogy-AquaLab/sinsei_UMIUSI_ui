@@ -32,7 +32,17 @@ const GamepadContext = createContext<GamepadContextValue>({
   getLatestGamepadByIndex: () => null,
 })
 
-const GamepadProvider = ({ children }: PropsWithChildren) => {
+type GamepadProviderProps = PropsWithChildren<{
+  /**
+   * ゲームパッドの状態をスキャンする頻度 frequency (Hz)
+   */
+  frequency?: number
+}>
+
+const GamepadProvider = ({
+  frequency = 30,
+  children,
+}: GamepadProviderProps) => {
   const [gamepads, setGamepads] = useState<Gamepads>({})
   const gamepadsRef = useRef<Gamepads>(gamepads)
   const [selectedIndex, setSelectedIndex] = useState<Gamepad['index'] | null>(
@@ -110,7 +120,7 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
     }
   }, [addGamepad, removeGamepad, scanGamepads])
 
-  useLoop({ callback: scanGamepads, frequency: 30 })
+  useLoop({ callback: scanGamepads, frequency })
 
   const selectGamepadByIndex = useCallback(
     (index: Gamepad['index'] | null) => {
