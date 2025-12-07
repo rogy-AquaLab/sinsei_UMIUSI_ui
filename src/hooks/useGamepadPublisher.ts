@@ -26,7 +26,7 @@ export const useGamepadPublisher = ({
   ros,
   frameRate = 30,
 }: GamepadPublisherOptions) => {
-  const { selectedIndex } = useContext(GamepadContext)
+  const { selectedIndex, getLatestGamepadByIndex } = useContext(GamepadContext)
   const intervalRef = useRef<number | null>(null)
 
   const targetTopic = useMemo(() => {
@@ -40,9 +40,9 @@ export const useGamepadPublisher = ({
 
   const loop = useCallback(() => {
     if (selectedIndex !== null) {
-      const latest = navigator.getGamepads?.()[selectedIndex]
-      if (!latest) return
-      const { axes, buttons } = mapGamepad(latest)
+      const gamepad = getLatestGamepadByIndex(selectedIndex)
+      if (!gamepad) return
+      const { axes, buttons } = mapGamepad(gamepad)
       const message: TargetMessage = {
         velocity: {
           x: -1 * deadzone(axes.l.y),

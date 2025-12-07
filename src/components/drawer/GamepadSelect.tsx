@@ -14,7 +14,7 @@ const GamepadSelect = () => {
       value={selectedIndex ?? DEFAULT_TEXT}
       onChange={(e) => {
         const index = e.target.value ? Number(e.target.value) : null
-        selectGamepadByIndex?.(index)
+        selectGamepadByIndex(index)
       }}
     >
       {Object.keys(gamepads).length === 0 ? (
