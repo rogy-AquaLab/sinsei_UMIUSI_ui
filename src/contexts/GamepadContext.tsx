@@ -8,6 +8,7 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react'
+import { useLoop } from '../hooks/useLoop'
 import { ToastContext } from './ToastContext'
 
 // ref: https://github.com/nogiszd/react-ts-gamepads/blob/main/src/GamepadContext.tsx
@@ -37,7 +38,6 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
   const [selectedIndex, setSelectedIndex] = useState<Gamepad['index'] | null>(
     null,
   )
-  const requestHandleRef = useRef<number | null>(null)
 
   const toast = useContext(ToastContext)
 
@@ -94,12 +94,6 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
     })
   }, [updateGamepad])
 
-  const update = useCallback(() => {
-    scanGamepads()
-
-    requestHandleRef.current = requestAnimationFrame(update)
-  }, [scanGamepads])
-
   useEffect(() => {
     scanGamepads()
 
@@ -110,17 +104,13 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
     window.addEventListener('gamepadconnected', onConnect)
     window.addEventListener('gamepaddisconnected', onDisconnect)
 
-    // 定期的にゲームパッドの状態をスキャンする
-    requestHandleRef.current = requestAnimationFrame(update)
-
     return () => {
       window.removeEventListener('gamepadconnected', onConnect)
       window.removeEventListener('gamepaddisconnected', onDisconnect)
-
-      if (requestHandleRef.current)
-        cancelAnimationFrame(requestHandleRef.current)
     }
-  }, [addGamepad, removeGamepad, scanGamepads, update])
+  }, [addGamepad, removeGamepad, scanGamepads])
+
+  useLoop({ callback: scanGamepads, frequency: 30 })
 
   const selectGamepadByIndex = useCallback(
     (index: Gamepad['index'] | null) => {

@@ -1,11 +1,12 @@
-import { useCallback, useContext, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 import { Ros, Topic } from 'roslib'
 import { mapGamepad } from '../utils/gamepadMapping'
 import { GamepadContext } from '../contexts/GamepadContext'
+import { useLoop } from './useLoop'
 
 type GamepadPublisherOptions = {
   ros: Ros | null
-  frameRate?: number
+  frequency?: number
 }
 
 // ref: https://github.com/rogy-AquaLab/sinsei_UMIUSI_msgs/blob/main/msg/Target.msg
@@ -24,10 +25,9 @@ const deadzone = (value: number, threshold = 0.1) =>
 
 export const useGamepadPublisher = ({
   ros,
-  frameRate = 30,
+  frequency = 30,
 }: GamepadPublisherOptions) => {
   const { selectedIndex, getLatestGamepadByIndex } = useContext(GamepadContext)
-  const intervalRef = useRef<number | null>(null)
 
   const targetTopic = useMemo(() => {
     if (!ros) return null
@@ -68,19 +68,6 @@ export const useGamepadPublisher = ({
     }
   }, [targetTopic, selectedIndex])
 
-  const clearInterval = () => {
-    if (intervalRef.current) {
-      window.clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
-  }
-
-  useEffect(() => {
-    if (!ros) clearInterval()
-
-    const interval = setInterval(loop, 1000 / frameRate)
-    intervalRef.current = interval
-
-    return clearInterval
-  }, [ros, frameRate, loop])
+  // rosオブジェクトが存在するときだけループを回す
+  useLoop({ callback: loop, frequency: ros ? frequency : null })
 }
