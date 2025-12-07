@@ -40,7 +40,7 @@ export const useGamepadPublisher = ({
 
   const loop = useCallback(() => {
     if (selectedIndex !== null) {
-      const latest = navigator.getGamepads()[selectedIndex]
+      const latest = navigator.getGamepads?.()[selectedIndex]
       if (!latest) return
       const { axes, buttons } = mapGamepad(latest)
       const message: TargetMessage = {
@@ -68,14 +68,19 @@ export const useGamepadPublisher = ({
     }
   }, [targetTopic, selectedIndex])
 
+  const clearInterval = () => {
+    if (intervalRef.current) {
+      window.clearInterval(intervalRef.current)
+      intervalRef.current = null
+    }
+  }
+
   useEffect(() => {
-    if (!ros) return
+    if (!ros) clearInterval()
 
     const interval = setInterval(loop, 1000 / frameRate)
     intervalRef.current = interval
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
+    return clearInterval
   }, [ros, frameRate, loop])
 }

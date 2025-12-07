@@ -36,7 +36,7 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
   const addGamepad = useCallback(
     (gamepad: Gamepad) => {
       setGamepads((prev) => ({ ...prev, [gamepad.index]: gamepad }))
-      // If no gamepad is selected, select the newly added one
+      // 最初に接続されたゲームパッドを自動的に選択する
       setSelectedIndex((current) => current ?? gamepad.index)
       toast?.show(`Gamepad connected: ${gamepad.id}`, 'info')
     },
@@ -86,23 +86,16 @@ const GamepadProvider = ({ children }: PropsWithChildren) => {
       addGamepad(gamepad)
     })
 
-    const connectGamepadHandler = (e: GamepadEvent) => {
-      addGamepad(e.gamepad)
-    }
+    // イベントリスナーの作成
+    const onConnect = (e: GamepadEvent) => addGamepad(e.gamepad)
+    const onDisconnect = (e: GamepadEvent) => removeGamepad(e.gamepad)
 
-    const disconnectGamepadHandler = (e: GamepadEvent) => {
-      removeGamepad(e.gamepad)
-    }
-
-    window.addEventListener('gamepadconnected', connectGamepadHandler)
-    window.addEventListener('gamepaddisconnected', disconnectGamepadHandler)
+    window.addEventListener('gamepadconnected', onConnect)
+    window.addEventListener('gamepaddisconnected', onDisconnect)
 
     return () => {
-      window.removeEventListener('gamepadconnected', connectGamepadHandler)
-      window.removeEventListener(
-        'gamepaddisconnected',
-        disconnectGamepadHandler,
-      )
+      window.removeEventListener('gamepadconnected', onConnect)
+      window.removeEventListener('gamepaddisconnected', onDisconnect)
     }
   }, [addGamepad, removeGamepad])
 

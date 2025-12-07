@@ -163,11 +163,7 @@ const RosProvider = ({ children, url: initialUrl }: RosProviderProps) => {
   }, [detachHandlers])
 
   // コンポーネントのアンマウント時に念のためdisconnectする
-  useEffect(() => {
-    return () => {
-      disconnect()
-    }
-  }, [disconnect])
+  useEffect(() => disconnect, [disconnect])
 
   const contextValue = useMemo(
     () => ({
