@@ -9,7 +9,7 @@ import {
   useContext,
 } from 'react'
 import { Ros } from 'roslib'
-import { ToastContext } from './ToastProvider'
+import { ToastContext } from './ToastContext'
 
 type RosConnectionState =
   | 'disconnected'
@@ -61,7 +61,7 @@ const RosProvider = ({ children, url: initialUrl }: RosProviderProps) => {
   const handlersRef = useRef<{
     handleConnection: () => void
     handleClose: () => void
-    handleError: (error: Event) => void
+    handleError: () => void
   } | null>(null)
 
   const detachHandlers = useCallback(() => {
@@ -163,11 +163,7 @@ const RosProvider = ({ children, url: initialUrl }: RosProviderProps) => {
   }, [detachHandlers])
 
   // コンポーネントのアンマウント時に念のためdisconnectする
-  useEffect(() => {
-    return () => {
-      disconnect()
-    }
-  }, [disconnect])
+  useEffect(() => disconnect, [disconnect])
 
   const contextValue = useMemo(
     () => ({
@@ -184,5 +180,4 @@ const RosProvider = ({ children, url: initialUrl }: RosProviderProps) => {
   return <RosContext value={contextValue}>{children}</RosContext>
 }
 
-export default RosProvider
-export { RosContext }
+export { RosProvider, RosContext }

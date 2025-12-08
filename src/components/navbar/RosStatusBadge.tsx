@@ -1,7 +1,7 @@
 import { useContext } from 'react'
-import { RosContext } from '../providers/RosProvider'
+import { RosContext } from '../../contexts/RosContext'
 
-const RosConnectionStatus = () => {
+const RosStatusBadge = () => {
   const { connectionState } = useContext(RosContext)
 
   const isLoading =
@@ -54,4 +54,4 @@ const RosConnectionStatus = () => {
   )
 }
 
-export default RosConnectionStatus
+export default RosStatusBadge
