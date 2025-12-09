@@ -2,22 +2,12 @@ import { useCallback, useContext, useMemo } from 'react'
 import { Ros, Topic } from 'roslib'
 import { mapGamepad } from '../utils/gamepadMapping'
 import { GamepadContext } from '../contexts/GamepadContext'
+import * as SinseiUmiusiMsgs from '../msgs/SinseiUmiusiMsgs'
 import { useLoop } from './useLoop'
 
 type GamepadPublisherOptions = {
   ros: Ros | null
   frequency?: number
-}
-
-// ref: https://github.com/rogy-AquaLab/sinsei_UMIUSI_msgs/blob/main/msg/Target.msg
-type Vector3 = {
-  x: number
-  y: number
-  z: number
-}
-type TargetMessage = {
-  velocity: Vector3
-  orientation: Vector3
 }
 
 const deadzone = (value: number, threshold = 0.1) =>
@@ -43,7 +33,7 @@ export const useGamepadPublisher = ({
       const gamepad = getLatestGamepadByIndex(selectedIndex)
       if (!gamepad) return
       const { axes, buttons } = mapGamepad(gamepad)
-      const message: TargetMessage = {
+      const message: SinseiUmiusiMsgs.Target = {
         velocity: {
           x: -1 * deadzone(axes.l.y),
           y: buttons.arrows.left.pressed
