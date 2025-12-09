@@ -6,10 +6,9 @@ import {
   useState,
   useCallback,
   type PropsWithChildren,
-  useContext,
 } from 'react'
 import { Ros } from 'roslib'
-import { ToastContext } from '@/contexts/ToastContext'
+import { useToast } from '@/hooks/useToast'
 
 type RosConnectionState =
   | 'disconnected'
@@ -55,7 +54,7 @@ const RosProvider = ({ children, url: initialUrl }: RosProviderProps) => {
   const connectionStateRef = useRef<RosConnectionState>(connectionState)
   connectionStateRef.current = connectionState
 
-  const toast = useContext(ToastContext)
+  const toast = useToast()
 
   // あとでoffにする際指定できるようコールバック関数を保持しておく
   const handlersRef = useRef<{

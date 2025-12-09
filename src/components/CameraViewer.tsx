@@ -1,5 +1,5 @@
-import { useContext, useEffect, useRef, useState } from 'react'
-import { ToastContext } from '@/contexts/ToastContext'
+import { useEffect, useRef, useState } from 'react'
+import { useToast } from '@/hooks/useToast'
 
 type Props = {
   hostname: string
@@ -15,7 +15,7 @@ const CameraViewer = ({ hostname, topicName, width, height }: Props) => {
   const imgRef = useRef(new Image())
 
   const [state, setState] = useState<CameraViewerState>('loading')
-  const toast = useContext(ToastContext)
+  const toast = useToast()
 
   const url = `${hostname}/stream?topic=${topicName}&type=mjpeg&width=${width}&height=${height}`
 

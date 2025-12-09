@@ -1,7 +1,6 @@
 import {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -9,7 +8,7 @@ import {
   type PropsWithChildren,
 } from 'react'
 import { useLoop } from '@/hooks/useLoop'
-import { ToastContext } from '@/contexts/ToastContext'
+import { useToast } from '@/hooks/useToast'
 
 // ref: https://github.com/nogiszd/react-ts-gamepads/blob/main/src/GamepadContext.tsx
 
@@ -49,7 +48,7 @@ const GamepadProvider = ({
     null,
   )
 
-  const toast = useContext(ToastContext)
+  const toast = useToast()
 
   const updateGamepad = useCallback((gamepad: Gamepad) => {
     setGamepads((prev) => {

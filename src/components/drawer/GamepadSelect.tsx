@@ -1,11 +1,9 @@
-import { useContext } from 'react'
-import { GamepadContext } from '@/contexts/GamepadContext'
+import { useGamepad } from '@/hooks/useGamepad'
 
 const DEFAULT_TEXT = 'No Gamepad Connected'
 
 const GamepadSelect = () => {
-  const { gamepads, selectedIndex, selectGamepadByIndex } =
-    useContext(GamepadContext)
+  const { gamepads, selectedIndex, selectGamepadByIndex } = useGamepad()
 
   return (
     <select

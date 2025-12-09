@@ -1,8 +1,7 @@
-import { useContext } from 'react'
-import { RosContext } from '@/contexts/RosContext'
+import { useRos } from '@/hooks/useRos'
 
 const RosStatusBadge = () => {
-  const { connectionState } = useContext(RosContext)
+  const { connectionState } = useRos()
 
   const isLoading =
     connectionState === 'connecting' ||

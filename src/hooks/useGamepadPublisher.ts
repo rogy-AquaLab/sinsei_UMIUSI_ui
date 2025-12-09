@@ -1,7 +1,7 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Ros, Topic } from 'roslib'
 import { mapGamepad } from '@/utils/gamepadMapping'
-import { GamepadContext } from '@/contexts/GamepadContext'
+import { useGamepad } from '@/hooks/useGamepad'
 import * as SinseiUmiusiMsgs from '@/msgs/SinseiUmiusiMsgs'
 import { useLoop } from '@/hooks/useLoop'
 
@@ -17,7 +17,7 @@ export const useGamepadPublisher = ({
   ros,
   frequency = 30,
 }: GamepadPublisherOptions) => {
-  const { selectedIndex, getLatestGamepadByIndex } = useContext(GamepadContext)
+  const { selectedIndex, getLatestGamepadByIndex } = useGamepad()
 
   const targetTopic = useMemo(() => {
     if (!ros) return null
