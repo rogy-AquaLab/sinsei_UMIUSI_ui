@@ -9,7 +9,7 @@ import {
   useContext,
 } from 'react'
 import { Ros } from 'roslib'
-import { ToastContext } from './ToastContext'
+import { ToastContext } from '@/contexts/ToastContext'
 
 type RosConnectionState =
   | 'disconnected'

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react'
-import { ToastContext } from '../contexts/ToastContext'
+import { ToastContext } from '@/contexts/ToastContext'
 
 type Props = {
   hostname: string

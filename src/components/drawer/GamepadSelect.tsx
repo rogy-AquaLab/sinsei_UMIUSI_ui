@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { GamepadContext } from '../../contexts/GamepadContext'
+import { GamepadContext } from '@/contexts/GamepadContext'
 
 const DEFAULT_TEXT = 'No Gamepad Connected'
 

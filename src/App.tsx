@@ -1,9 +1,9 @@
 import { useContext } from 'react'
-import Navbar from './components/Navbar'
-import Drawer from './components/Drawer'
-import CameraViewer from './components/CameraViewer'
-import { useGamepadPublisher } from './hooks/useGamepadPublisher'
-import { RosContext } from './contexts/RosContext'
+import Drawer from '@/components/Drawer'
+import CameraViewer from '@/components/CameraViewer'
+import { useGamepadPublisher } from '@/hooks/useGamepadPublisher'
+import { RosContext } from '@/contexts/RosContext'
+import Navbar from '@/components/Navbar'
 
 function App() {
   const { ros } = useContext(RosContext)

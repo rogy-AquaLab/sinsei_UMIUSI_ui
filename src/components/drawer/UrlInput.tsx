@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { RosContext } from '../../contexts/RosContext'
+import { RosContext } from '@/contexts/RosContext'
 
 const UrlInput = () => {
   const { connectionState, url, setUrl } = useContext(RosContext)

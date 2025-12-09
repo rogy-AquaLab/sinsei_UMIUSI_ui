@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { FaPlug } from 'react-icons/fa'
-import { RosContext } from '../../contexts/RosContext'
+import { RosContext } from '@/contexts/RosContext'
 
 const RosConnectButton = () => {
   const { connectionState, connect, disconnect } = useContext(RosContext)

@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { RosContext } from '../../contexts/RosContext'
+import { RosContext } from '@/contexts/RosContext'
 
 const RosStatusBadge = () => {
   const { connectionState } = useContext(RosContext)

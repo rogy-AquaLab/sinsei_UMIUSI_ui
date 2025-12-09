@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from 'react'
-import RosConnectButton from './drawer/RosConnectButton'
-import UrlInput from './drawer/UrlInput'
-import GamepadSelect from './drawer/GamepadSelect'
+import RosConnectButton from '@/components/drawer/RosConnectButton'
+import UrlInput from '@/components/drawer/UrlInput'
+import GamepadSelect from '@/components/drawer/GamepadSelect'
 
 const Drawer = ({ children }: PropsWithChildren) => {
   return (

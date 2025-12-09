@@ -8,8 +8,8 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react'
-import { useLoop } from '../hooks/useLoop'
-import { ToastContext } from './ToastContext'
+import { useLoop } from '@/hooks/useLoop'
+import { ToastContext } from '@/contexts/ToastContext'
 
 // ref: https://github.com/nogiszd/react-ts-gamepads/blob/main/src/GamepadContext.tsx
 
