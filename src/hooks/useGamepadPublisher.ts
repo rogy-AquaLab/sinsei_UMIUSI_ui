@@ -66,7 +66,7 @@ export const useGamepadPublisher = ({
 
       targetTopic?.publish(message)
     }
-  }, [targetTopic, selectedIndex])
+  }, [selectedIndex, getLatestGamepadByIndex, targetTopic])
 
   // rosオブジェクトが存在するときだけループを回す
   useLoop({ callback: loop, frequency: ros ? frequency : null })
