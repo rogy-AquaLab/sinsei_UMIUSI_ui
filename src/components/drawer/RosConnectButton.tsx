@@ -1,9 +1,8 @@
-import { useContext } from 'react'
 import { FaPlug } from 'react-icons/fa'
-import { RosContext } from '../../contexts/RosContext'
+import { useRos } from '@/hooks/useRos'
 
 const RosConnectButton = () => {
-  const { connectionState, connect, disconnect } = useContext(RosContext)
+  const { connectionState, connect, disconnect } = useRos()
 
   let handleClick: (() => void) | undefined
   let label: string, tone: string

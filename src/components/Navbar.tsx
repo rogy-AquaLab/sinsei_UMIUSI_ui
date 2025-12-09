@@ -1,6 +1,6 @@
 import { FaAngleLeft } from 'react-icons/fa'
-import RosStatusBadge from './navbar/RosStatusBadge'
-import GamepadStatusIcon from './navbar/GamepadStatusIcon'
+import RosStatusBadge from '@/components/navbar/RosStatusBadge'
+import GamepadStatusIcon from '@/components/navbar/GamepadStatusIcon'
 
 const Navbar = () => {
   return (
