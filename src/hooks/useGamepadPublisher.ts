@@ -49,8 +49,8 @@ export const useGamepadPublisher = ({
         },
         orientation: {
           x: 0.3 * deadzone(axes.r.x),
-          y: 0.3 * deadzone(axes.r.y),
-          z: 0.2 * deadzone(axes.l.x),
+          y: -0.3 * deadzone(axes.r.y),
+          z: -0.2 * deadzone(axes.l.x),
         },
       }
 
