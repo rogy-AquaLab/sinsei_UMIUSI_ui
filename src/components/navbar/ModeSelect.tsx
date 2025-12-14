@@ -2,7 +2,7 @@ import { useRobotState } from '@/hooks/useRobotState'
 import { RobotMode, robotModeToString } from '@/msgs/utils/RobotMode'
 
 const ModeSelect = () => {
-  const { isPoweredOn, mode, setMode } = useRobotState()
+  const { mainPowerState, mode, setMode } = useRobotState()
 
   return (
     <label className="select">
@@ -10,7 +10,7 @@ const ModeSelect = () => {
       <select
         className="select"
         id="mode-select"
-        disabled={!isPoweredOn}
+        disabled={mainPowerState !== 'on'}
         value={mode ?? ''}
         onChange={(e) => {
           const selectedMode = e.target.value ? Number(e.target.value) : null

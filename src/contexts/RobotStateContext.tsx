@@ -18,16 +18,11 @@ import type {
 } from '@/msgs/OriginalServices'
 import { RobotMode, robotModeToString } from '@/msgs/utils/RobotMode'
 
+type MainPowerState = 'unknown' | 'off' | 'on' | 'poweringOn' | 'poweringOff'
+
 type RobotStateContextValue = {
-  /**
-   * 強電のON/OFF。rosbridgeが未接続の場合はnull
-   */
-  isPoweredOn: boolean | null
-  setIsPoweredOn: (poweredOn: boolean) => void
-  /**
-   * 強電のON/OFFが遷移中かどうか
-   */
-  isPowerTransitioning: boolean
+  mainPowerState: MainPowerState
+  setMainPower: (on: boolean) => void
   /**
    * ロボットの動作モード。rosbridgeが未接続の場合はnull
    */
@@ -36,9 +31,8 @@ type RobotStateContextValue = {
 }
 
 const RobotStateContext = createContext<RobotStateContextValue>({
-  isPoweredOn: null,
-  setIsPoweredOn: () => {},
-  isPowerTransitioning: false,
+  mainPowerState: 'unknown',
+  setMainPower: () => {},
   mode: null,
   setMode: () => {},
 })
@@ -46,9 +40,8 @@ const RobotStateContext = createContext<RobotStateContextValue>({
 const RobotStateProvider = ({ children }: PropsWithChildren) => {
   const { ros, connectionState } = useRos()
 
-  const [isPoweredOn, _setIsPoweredOn] = useState<boolean | null>(null)
-  const [isPowerTransitioning, setIsPowerTransitioning] =
-    useState<boolean>(false)
+  const [mainPowerState, setMainPowerState] =
+    useState<MainPowerState>('unknown')
   const [mode, _setMode] = useState<RobotMode | null>(null)
 
   const toast = useToast()
@@ -94,71 +87,50 @@ const RobotStateProvider = ({ children }: PropsWithChildren) => {
 
     robotStateTopic.subscribe((_message) => {
       const message = _message as RobotState
+      const isOn = message.state !== RobotMode.POWERED_OFF
 
+      setMainPowerState(isOn ? 'on' : 'off')
       _setMode(message.state)
-
-      // 強電状態が変化したら遷移中フラグを下ろす
-      _setIsPoweredOn((prev) => {
-        const next = message.state !== RobotMode.POWERED_OFF
-        if (prev !== next) setIsPowerTransitioning(false)
-        return next
-      })
     })
 
     return () => robotStateTopic.unsubscribe()
   }, [robotStateTopic])
 
-  const setIsPoweredOn = useCallback(
-    (val: boolean) => {
-      if (isPowerTransitioning) {
+  const setMainPower = useCallback(
+    (on: boolean) => {
+      if (mainPowerState === 'poweringOn' || mainPowerState === 'poweringOff') {
         console.warn('Power transition already in progress')
         return
       }
-      setIsPowerTransitioning(true)
+      setMainPowerState(on ? 'poweringOn' : 'poweringOff')
 
-      if (val) {
-        powerOnService?.callService(
-          null,
-          (_res) => {
-            const res = _res as PowerOnResponce
-            if (res.success) {
-              console.log('Power ON requested')
-              toast?.show('Power ON requested', 'success')
-            } else {
-              console.error('Power ON failed:', res.error_msg)
-              toast?.show(`Power ON failed: ${res.error_msg}`, 'error')
-              setIsPowerTransitioning(false)
-            }
-          },
-          (err) => {
-            console.error('Power ON service call failed', err)
-            toast?.show('Power ON service call failed', 'error')
-            setIsPowerTransitioning(false)
-          },
-        )
-      } else {
-        powerOffService?.callService(
-          null,
-          (_res) => {
-            const res = _res as PowerOffResponce
-            if (res.success) {
-              console.log('Power OFF requested')
-              toast?.show('Power OFF requested', 'success')
-            } else {
-              console.error('Power OFF failed:', res.error_msg)
-              toast?.show(`Power OFF failed: ${res.error_msg}`, 'error')
-              setIsPowerTransitioning(false)
-            }
-          },
-          (err) => {
-            console.error('Power OFF service call failed', err)
-            toast?.show('Power OFF service call failed', 'error')
-            setIsPowerTransitioning(false)
-          },
-        )
-      }
+      const service = on ? powerOnService : powerOffService
+      service?.callService(
+        null,
+        (_res) => {
+          const res = _res as PowerOnResponce | PowerOffResponce
+          if (res.success) {
+            console.log(`Power ${on ? 'ON' : 'OFF'} requested`)
+            toast?.show(`Power ${on ? 'ON' : 'OFF'} requested`, 'success')
+          } else {
+            console.error(`Power ${on ? 'ON' : 'OFF'} failed:`, res.error_msg)
+            toast?.show(
+              `Power ${on ? 'ON' : 'OFF'} failed: ${res.error_msg}`,
+              'error',
+            )
+            // 状態を元に戻す
+            setMainPowerState(on ? 'off' : 'on')
+          }
+        },
+        () => {
+          console.error(`Power ${on ? 'ON' : 'OFF'} service call failed`)
+          toast?.show(`Power ${on ? 'ON' : 'OFF'} service call failed`, 'error')
+          // 状態を元に戻す
+          setMainPowerState(on ? 'off' : 'on')
+        },
+      )
     },
-    [isPowerTransitioning, powerOnService, powerOffService, toast],
+    [mainPowerState, powerOnService, powerOffService, toast],
   )
 
   const setMode = useCallback(
@@ -193,21 +165,19 @@ const RobotStateProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     // 接続が切れたら状態をリセット
     if (connectionState !== 'connected') {
-      _setIsPoweredOn(null)
+      setMainPowerState('unknown')
       _setMode(null)
-      setIsPowerTransitioning(false)
     }
   }, [connectionState])
 
   const contextValue = useMemo(() => {
     return {
-      isPoweredOn,
-      setIsPoweredOn,
-      isPowerTransitioning,
+      mainPowerState,
+      setMainPower,
       mode,
       setMode,
     }
-  }, [isPoweredOn, isPowerTransitioning, mode, setIsPoweredOn, setMode])
+  }, [mainPowerState, setMainPower, mode, setMode])
 
   return <RobotStateContext value={contextValue}>{children}</RobotStateContext>
 }
