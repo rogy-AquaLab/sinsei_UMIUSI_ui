@@ -1,4 +1,4 @@
-export const RobotMode = {
+export const RobotModeMap = {
   STANDBY: 0,
   MANUAL: 1,
   AUTO: 2,
@@ -6,19 +6,31 @@ export const RobotMode = {
   POWERED_OFF: -1,
 } as const
 
-export type RobotMode = (typeof RobotMode)[keyof typeof RobotMode]
+export type RobotMode = keyof typeof RobotModeMap
+
+export type RobotModeNum = (typeof RobotModeMap)[RobotMode]
+
+export const robotModeToNum = (mode: RobotMode): RobotModeNum => {
+  return RobotModeMap[mode]
+}
+
+export const numToRobotMode = (num: RobotModeNum): RobotMode | undefined => {
+  return (Object.keys(RobotModeMap) as RobotMode[]).find(
+    (key) => RobotModeMap[key] === num,
+  )
+}
 
 export const robotModeToString = (mode: RobotMode): string => {
   switch (mode) {
-    case RobotMode.STANDBY:
+    case 'STANDBY':
       return 'Standby'
-    case RobotMode.MANUAL:
+    case 'MANUAL':
       return 'Manual'
-    case RobotMode.AUTO:
+    case 'AUTO':
       return 'Auto'
-    case RobotMode.DEBUG:
+    case 'DEBUG':
       return 'Debug'
-    case RobotMode.POWERED_OFF:
+    case 'POWERED_OFF':
       return 'Powered Off'
     default:
       return 'Unknown'

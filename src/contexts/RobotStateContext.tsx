@@ -16,7 +16,13 @@ import type {
   SetModeRequest,
   SetModeResponse,
 } from '@/msgs/OriginalServices'
-import { RobotMode, robotModeToString } from '@/msgs/utils/RobotMode'
+import {
+  numToRobotMode,
+  type RobotMode,
+  RobotModeMap,
+  robotModeToNum,
+  robotModeToString,
+} from '@/msgs/utils/RobotMode'
 
 type MainPowerState = 'unknown' | 'off' | 'on' | 'poweringOn' | 'poweringOff'
 
@@ -87,10 +93,10 @@ const RobotStateProvider = ({ children }: PropsWithChildren) => {
 
     robotStateTopic.subscribe((_message) => {
       const message = _message as RobotState
-      const isOn = message.state !== RobotMode.POWERED_OFF
+      const isOn = message.state !== RobotModeMap.POWERED_OFF
 
       setMainPowerState(isOn ? 'on' : 'off')
-      _setMode(message.state)
+      _setMode(numToRobotMode(message.state) ?? null)
     })
 
     return () => robotStateTopic.unsubscribe()
@@ -136,7 +142,7 @@ const RobotStateProvider = ({ children }: PropsWithChildren) => {
   const setMode = useCallback(
     (mode: RobotMode) => {
       const request: SetModeRequest = {
-        mode,
+        mode: robotModeToNum(mode),
       }
       setModeService?.callService(
         request,

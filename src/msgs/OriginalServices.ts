@@ -1,4 +1,4 @@
-import { RobotMode } from '@/msgs/utils/RobotMode'
+import type { RobotModeNum } from '@/msgs/utils/RobotMode'
 
 export type PowerOnResponce = {
   success: boolean
@@ -11,7 +11,7 @@ export type PowerOffResponce = {
 }
 
 export type SetModeRequest = {
-  mode: RobotMode
+  mode: RobotModeNum
 }
 
 export type SetModeResponse = {

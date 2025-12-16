@@ -1,5 +1,5 @@
 import * as GeometryMsgs from '@/msgs/GeometryMsgs'
-import { RobotMode } from '@/msgs/utils/RobotMode'
+import type { RobotModeNum } from '@/msgs/utils/RobotMode'
 
 export type Target = {
   velocity: GeometryMsgs.Vector3
@@ -7,5 +7,5 @@ export type Target = {
 }
 
 export type RobotState = {
-  state: RobotMode
+  state: RobotModeNum
 }
