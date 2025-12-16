@@ -35,14 +35,16 @@ const RosConnectButton = () => {
   }
 
   return (
-    <button
-      className={`is-drawer-close:tooltip is-drawer-close:tooltip-left ${tone}`}
-      data-tip={label}
-      onClick={handleClick}
-    >
-      <FaPlug className="my-1.5 inline-block size-4" />
-      <span className="is-drawer-close:hidden">{label}</span>
-    </button>
+    <li>
+      <button
+        className={`is-drawer-close:tooltip is-drawer-close:tooltip-left ${tone}`}
+        data-tip={label}
+        onClick={handleClick}
+      >
+        <FaPlug className="my-1.5 inline-block size-4" />
+        <span className="is-drawer-close:hidden">{label}</span>
+      </button>
+    </li>
   )
 }
 

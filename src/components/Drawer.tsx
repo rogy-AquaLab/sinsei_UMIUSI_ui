@@ -2,6 +2,7 @@ import type { PropsWithChildren } from 'react'
 import RosConnectButton from '@/components/drawer/RosConnectButton'
 import UrlInput from '@/components/drawer/UrlInput'
 import GamepadSelect from '@/components/drawer/GamepadSelect'
+import MainPowerButton from '@/components/drawer/MainPowerButton'
 
 const Drawer = ({ children }: PropsWithChildren) => {
   return (
@@ -28,9 +29,8 @@ const Drawer = ({ children }: PropsWithChildren) => {
           </div>
           <ul className="menu w-full grow">
             {/* List item */}
-            <li>
-              <RosConnectButton />
-            </li>
+            <MainPowerButton />
+            <RosConnectButton />
           </ul>
         </div>
       </div>
