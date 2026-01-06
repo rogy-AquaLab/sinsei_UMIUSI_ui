@@ -19,12 +19,15 @@ import type {
 import {
   numToRobotMode,
   type RobotMode,
+  type OperationMode,
   RobotModeMap,
   robotModeToNum,
   robotModeToString,
 } from '@/msgs/utils/RobotMode'
 
 type MainPowerState = 'unknown' | 'off' | 'on' | 'poweringOn' | 'poweringOff'
+
+type ModeTransitionState = 'idle' | 'transitioning'
 
 type RobotStateContextValue = {
   mainPowerState: MainPowerState
@@ -33,14 +36,39 @@ type RobotStateContextValue = {
    * ロボットの動作モード。rosbridgeが未接続の場合はnull
    */
   mode: RobotMode | null
-  setMode: (mode: RobotMode) => void
+  /**
+   * 動作モードが移行中かどうか
+   */
+  modeTransitionState: ModeTransitionState
+  /**
+   * UIで選択された動作モード
+   */
+  operationMode: OperationMode
+  /**
+   * UIで選択された動作モードをセットする関数
+   * @param mode
+   * @returns
+   */
+  setOperationMode: (mode: OperationMode) => void
+  /**
+   * スタンバイからUIで選択された動作モードに移行する
+   */
+  enterOperation: () => void
+  /**
+   * 任意の動作モードからスタンバイに移行する
+   */
+  enterStandby: () => void
 }
 
 const RobotStateContext = createContext<RobotStateContextValue>({
   mainPowerState: 'unknown',
   setMainPower: () => {},
   mode: null,
-  setMode: () => {},
+  modeTransitionState: 'idle',
+  operationMode: 'MANUAL',
+  setOperationMode: () => {},
+  enterOperation: () => {},
+  enterStandby: () => {},
 })
 
 const RobotStateProvider = ({ children }: PropsWithChildren) => {
@@ -49,6 +77,9 @@ const RobotStateProvider = ({ children }: PropsWithChildren) => {
   const [mainPowerState, setMainPowerState] =
     useState<MainPowerState>('unknown')
   const [mode, _setMode] = useState<RobotMode | null>(null)
+  const [modeTransitionState, setModeTransitionState] =
+    useState<ModeTransitionState>('idle')
+  const [operationMode, setOperationMode] = useState<OperationMode>('MANUAL')
 
   const toast = useToast()
 
@@ -94,9 +125,16 @@ const RobotStateProvider = ({ children }: PropsWithChildren) => {
     robotStateTopic.subscribe((_message) => {
       const message = _message as RobotState
       const isOn = message.state !== RobotModeMap.POWERED_OFF
+      const newMode = numToRobotMode(message.state) ?? null
 
       setMainPowerState(isOn ? 'on' : 'off')
-      _setMode(numToRobotMode(message.state) ?? null)
+      _setMode((prev) => {
+        // モードが変化したらmodeTransitionStateを'idle'に戻す
+        if (prev !== newMode) {
+          setModeTransitionState('idle')
+        }
+        return newMode
+      })
     })
 
     return () => robotStateTopic.unsubscribe()
@@ -139,8 +177,15 @@ const RobotStateProvider = ({ children }: PropsWithChildren) => {
     [mainPowerState, powerOnService, powerOffService, toast],
   )
 
-  const setMode = useCallback(
+  const requestSetMode = useCallback(
     (mode: RobotMode) => {
+      if (modeTransitionState === 'transitioning') {
+        console.warn('Mode transition already in progress')
+        return
+      }
+
+      setModeTransitionState('transitioning')
+
       const request: SetModeRequest = {
         mode: robotModeToNum(mode),
       }
@@ -157,33 +202,62 @@ const RobotStateProvider = ({ children }: PropsWithChildren) => {
           } else {
             console.error('Set Mode failed:', res.error_msg)
             toast?.show(`Set Mode failed: ${res.error_msg}`, 'error')
+            setModeTransitionState('idle')
           }
         },
         (err) => {
           console.error('Set Mode service call failed', err)
           toast?.show('Set Mode service call failed', 'error')
+          setModeTransitionState('idle')
         },
       )
     },
-    [setModeService, toast],
+    [modeTransitionState, setModeService, toast],
   )
+
+  const enterOperation = useCallback(() => {
+    if (mode !== 'STANDBY') {
+      console.warn('Robot is not in STANDBY')
+      return
+    }
+    requestSetMode(operationMode)
+  }, [mode, operationMode, requestSetMode])
+
+  const enterStandby = useCallback(() => {
+    if (mode === 'STANDBY') return
+    requestSetMode('STANDBY')
+  }, [mode, requestSetMode])
 
   useEffect(() => {
     // 接続が切れたら状態をリセット
     if (connectionState !== 'connected') {
       setMainPowerState('unknown')
       _setMode(null)
+      setModeTransitionState('idle')
     }
   }, [connectionState])
 
-  const contextValue = useMemo(() => {
+  const contextValue: RobotStateContextValue = useMemo(() => {
     return {
       mainPowerState,
       setMainPower,
       mode,
-      setMode,
+      modeTransitionState,
+      operationMode,
+      setOperationMode,
+      enterOperation,
+      enterStandby,
     }
-  }, [mainPowerState, setMainPower, mode, setMode])
+  }, [
+    mainPowerState,
+    setMainPower,
+    mode,
+    modeTransitionState,
+    operationMode,
+    setOperationMode,
+    enterOperation,
+    enterStandby,
+  ])
 
   return <RobotStateContext value={contextValue}>{children}</RobotStateContext>
 }

@@ -3,6 +3,8 @@ import RosConnectButton from '@/components/drawer/RosConnectButton'
 import UrlInput from '@/components/drawer/UrlInput'
 import GamepadSelect from '@/components/drawer/GamepadSelect'
 import MainPowerButton from '@/components/drawer/MainPowerButton'
+import OperationModeSelect from '@/components/drawer/OperationModeSelect'
+import OperationButton from '@/components/drawer/OparationButton'
 
 const Drawer = ({ children }: PropsWithChildren) => {
   return (
@@ -25,10 +27,13 @@ const Drawer = ({ children }: PropsWithChildren) => {
               <UrlInput />
               <label className="label">Gamepad</label>
               <GamepadSelect />
+              <label className="label">Operation Mode</label>
+              <OperationModeSelect />
             </fieldset>
           </div>
           <ul className="menu w-full grow">
             {/* List item */}
+            <OperationButton />
             <MainPowerButton />
             <RosConnectButton />
           </ul>

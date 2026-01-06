@@ -8,6 +8,8 @@ export const RobotModeMap = {
 
 export type RobotMode = keyof typeof RobotModeMap
 
+export type OperationMode = Exclude<RobotMode, 'STANDBY' | 'POWERED_OFF'>
+
 export type RobotModeNum = (typeof RobotModeMap)[RobotMode]
 
 export const robotModeToNum = (mode: RobotMode): RobotModeNum => {
