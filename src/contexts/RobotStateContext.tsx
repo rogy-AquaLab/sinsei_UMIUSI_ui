@@ -195,10 +195,10 @@ const RobotStateProvider = ({ children }: PropsWithChildren) => {
           const res = _res as SetModeResponse
           if (res.success) {
             console.log(`Set Mode to ${robotModeToString(mode)} requested`)
-            toast?.show(
-              `Set Mode to ${robotModeToString(mode)} requested`,
-              'success',
-            )
+            // toast?.show(
+            //   `Set Mode to ${robotModeToString(mode)} requested`,
+            //   'success',
+            // )
           } else {
             console.error('Set Mode failed:', res.error_msg)
             toast?.show(`Set Mode failed: ${res.error_msg}`, 'error')

@@ -20,7 +20,7 @@ const ModeIcon = () => {
   return (
     <div
       className={`tooltip tooltip-bottom text-2xl ${tone}`}
-      data-tip={mode ? robotModeToString(mode) : 'Unknown'}
+      data-tip={(mode ? robotModeToString(mode) : 'Unknown') + ' Mode'}
     >
       {mode === null ? (
         <FaQuestionCircle />
