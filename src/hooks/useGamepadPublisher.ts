@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { Ros, Topic } from 'roslib'
 import { mapGamepad } from '@/utils/gamepadMapping'
 import { useGamepad } from '@/hooks/useGamepad'
-import * as SinseiUmiusiMsgs from '@/msgs/SinseiUmiusiMsgs'
+import * as Msgs from '@/msgs/OriginalMsgs'
 import { useLoop } from '@/hooks/useLoop'
 
 type GamepadPublisherOptions = {
@@ -33,7 +33,7 @@ export const useGamepadPublisher = ({
       const gamepad = getLatestGamepadByIndex(selectedIndex)
       if (!gamepad) return
       const { axes, buttons } = mapGamepad(gamepad)
-      const message: SinseiUmiusiMsgs.Target = {
+      const message: Msgs.Target = {
         velocity: {
           x: -1 * deadzone(axes.l.y),
           y: buttons.arrows.left.pressed
