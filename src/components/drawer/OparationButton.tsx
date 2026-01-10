@@ -1,6 +1,5 @@
 import { FaPlay, FaPause } from 'react-icons/fa6'
 import type { ReactElement } from 'react'
-import { FaQuestion } from 'react-icons/fa'
 import { useRobotState } from '@/hooks/useRobotState'
 import { robotModeToString } from '@/msgs/utils/RobotMode'
 
