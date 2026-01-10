@@ -1,5 +1,6 @@
 import { FaPlay, FaPause } from 'react-icons/fa6'
 import type { ReactElement } from 'react'
+import { FaQuestion } from 'react-icons/fa'
 import { useRobotState } from '@/hooks/useRobotState'
 import { robotModeToString } from '@/msgs/utils/RobotMode'
 
@@ -27,10 +28,14 @@ const OperationButton = () => {
     label = 'Switching Operation Mode...'
     tone = 'text-muted'
     icon = <FaPause className="my-1.5 inline-block size-4" />
-  } else if (!isPoweredOn || mode === null || mode === 'POWERED_OFF') {
+  } else if (mode === null) {
     label = 'Operation Mode: Unknown'
     tone = 'text-muted'
-    icon = <FaPause className="my-1.5 inline-block size-4" />
+    icon = <FaQuestion className="my-1.5 inline-block size-4" />
+  } else if (!isPoweredOn) {
+    label = 'Operation Mode: Unavailable'
+    tone = 'text-muted'
+    icon = <FaQuestion className="my-1.5 inline-block size-4" />
   } else if (isStandby) {
     label = `Enter Operation (${robotModeToString(operationMode)})`
     tone = 'text-primary'
