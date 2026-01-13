@@ -27,10 +27,14 @@ const OperationButton = () => {
     label = 'Switching Operation Mode...'
     tone = 'text-muted'
     icon = <FaPause className="my-1.5 inline-block size-4" />
-  } else if (!isPoweredOn || mode === null || mode === 'POWERED_OFF') {
+  } else if (mode === null) {
     label = 'Operation Mode: Unknown'
     tone = 'text-muted'
-    icon = <FaPause className="my-1.5 inline-block size-4" />
+    icon = <FaPlay className="my-1.5 inline-block size-4" />
+  } else if (!isPoweredOn) {
+    label = 'Operation Mode: Unavailable'
+    tone = 'text-muted'
+    icon = <FaPlay className="my-1.5 inline-block size-4" />
   } else if (isStandby) {
     label = `Enter Operation (${robotModeToString(operationMode)})`
     tone = 'text-primary'
