@@ -5,6 +5,7 @@ import GamepadSelect from '@/components/drawer/GamepadSelect'
 import MainPowerButton from '@/components/drawer/MainPowerButton'
 import OperationModeSelect from '@/components/drawer/OperationModeSelect'
 import OperationButton from '@/components/drawer/OparationButton'
+import LogPanel from '@/components/drawer/LogPanel'
 
 const Drawer = ({ children }: PropsWithChildren) => {
   return (
@@ -37,6 +38,9 @@ const Drawer = ({ children }: PropsWithChildren) => {
             <MainPowerButton />
             <RosConnectButton />
           </ul>
+          <div className="is-drawer-close:hidden w-full">
+            <LogPanel />
+          </div>
         </div>
       </div>
     </div>

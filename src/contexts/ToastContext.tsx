@@ -19,12 +19,17 @@ export type Toast = {
 
 type ToastContextValue = {
   show: (message: string, type?: ToastType) => void
+  history: Toast[]
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null)
 
+const TOAST_AUTO_DISMISS_MS = 4000
+const LOG_LIMIT = 50
+
 const ToastProvider = ({ children }: PropsWithChildren) => {
   const [toasts, setToasts] = useState<Toast[]>([])
+  const [history, setHistory] = useState<Toast[]>([])
 
   const addToast = (message: string, type: ToastType = 'info') => {
     const id = uuidv4()
@@ -35,7 +40,16 @@ const ToastProvider = ({ children }: PropsWithChildren) => {
       second: '2-digit',
     })
 
-    setToasts((prev) => [...prev, { id, message, type, timestamp }])
+    const toast = { id, message, type, timestamp }
+    setToasts((prev) => [...prev, toast])
+    setHistory((prev) => {
+      const next = [...prev, toast]
+      return next.length > LOG_LIMIT ? next.slice(-LOG_LIMIT) : next
+    })
+
+    window.setTimeout(() => {
+      removeToast(id)
+    }, TOAST_AUTO_DISMISS_MS)
   }
 
   const removeToast = (id: string) => {
@@ -64,7 +78,7 @@ const ToastProvider = ({ children }: PropsWithChildren) => {
   }
 
   return (
-    <ToastContext value={{ show: addToast }}>
+    <ToastContext value={{ show: addToast, history }}>
       {children}
 
       <div className="fixed inset-0 pointer-events-none z-50 flex items-end justify-end">
