@@ -2,8 +2,15 @@ import { FaAngleLeft } from 'react-icons/fa'
 import RosStatusBadge from '@/components/navbar/RosStatusBadge'
 import GamepadStatusIcon from '@/components/navbar/GamepadStatusIcon'
 import ModeIcon from '@/components/navbar/ModeIcon'
+import MainTabs from '@/components/navbar/MainTabs'
+import type { MainContentTab } from '@/types/navigation'
 
-const Navbar = () => {
+type NavbarProps = {
+  activeTab: MainContentTab
+  onTabChange: (tab: MainContentTab) => void
+}
+
+const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
   return (
     <div className="navbar bg-base-100 shadow-sm">
       <div className="navbar-start">
@@ -15,6 +22,9 @@ const Navbar = () => {
           />
           SINSEI UMIUSI
         </a>
+      </div>
+      <div className="navbar-center">
+        <MainTabs active={activeTab} onChange={onTabChange} />
       </div>
       <div className="navbar-end">
         <div className="flex items-center gap-5">
