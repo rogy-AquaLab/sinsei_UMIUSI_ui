@@ -9,16 +9,14 @@ import {
 } from 'react'
 import { Topic } from 'roslib'
 import { RosContext } from '@/contexts/RosContext'
-
-export type RosoutMessage = {
-  stamp: { sec: number; nanosec?: number; nsec?: number }
-  level: number
-  name: string
-  msg: string
-  file?: string
-  function?: string
-  line?: number
-}
+import type { RclLog, RclLogLevel } from '@/msgs/RclInterfacesMsgs'
+import {
+  RCL_LOG_LEVEL_DEBUG,
+  RCL_LOG_LEVEL_ERROR,
+  RCL_LOG_LEVEL_FATAL,
+  RCL_LOG_LEVEL_INFO,
+  RCL_LOG_LEVEL_WARN,
+} from '@/msgs/RclInterfacesMsgs'
 
 export type RosoutLog = {
   id: string
@@ -46,17 +44,17 @@ const ROSOUT_MESSAGE_TYPE = 'rcl_interfaces/msg/Log'
 const MAX_ROSOUT_LOGS = 200
 
 const levelMap: Record<
-  number,
+  RclLogLevel,
   {
     label: string
     klass: string
   }
 > = {
-  10: { label: 'DEBUG', klass: 'badge-info' },
-  20: { label: 'INFO', klass: 'badge-info' },
-  30: { label: 'WARN', klass: 'badge-warning' },
-  40: { label: 'ERROR', klass: 'badge-error' },
-  50: { label: 'FATAL', klass: 'badge-error' },
+  [RCL_LOG_LEVEL_DEBUG]: { label: 'DEBUG', klass: 'badge-info' },
+  [RCL_LOG_LEVEL_INFO]: { label: 'INFO', klass: 'badge-info' },
+  [RCL_LOG_LEVEL_WARN]: { label: 'WARN', klass: 'badge-warning' },
+  [RCL_LOG_LEVEL_ERROR]: { label: 'ERROR', klass: 'badge-error' },
+  [RCL_LOG_LEVEL_FATAL]: { label: 'FATAL', klass: 'badge-error' },
 }
 
 const RosoutProvider = ({ children }: PropsWithChildren) => {
@@ -81,25 +79,25 @@ const RosoutProvider = ({ children }: PropsWithChildren) => {
     })
 
     const handleMessage = (message: unknown) => {
-      const rosoutMessage = message as RosoutMessage
-      const nanosec =
-        rosoutMessage.stamp.nanosec ?? rosoutMessage.stamp.nsec ?? 0
+      const rosoutMessage = message as RclLog
+      const stamp = rosoutMessage.stamp
+      const nanosec = stamp.nanosec ?? 0
       const timestampMs =
-        rosoutMessage.stamp.sec * 1000 + Math.floor(nanosec / 1e6)
+        (stamp.sec ?? 0) * 1000 + Math.floor(nanosec / 1e6) || Date.now()
       const timestamp = new Date(timestampMs).toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
       })
 
-      const severity = levelMap[rosoutMessage.level] ?? {
+      const severity = levelMap[rosoutMessage.level as RclLogLevel] ?? {
         label: `LV${rosoutMessage.level}`,
         klass: 'badge-ghost',
       }
 
       setLogs((prev) => {
         const logEntry: RosoutLog = {
-          id: `${rosoutMessage.stamp.sec}-${nanosec}-${rosoutMessage.name}-${Math.random()}`,
+          id: `${stamp.sec}-${nanosec}-${rosoutMessage.name}-${Math.random()}`,
           timestamp,
           rawTimestamp: timestampMs,
           level: rosoutMessage.level,
