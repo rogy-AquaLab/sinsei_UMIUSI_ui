@@ -135,18 +135,12 @@ const NotificationsTable = ({ logs }: { logs: Toast[] }) => {
 
   return (
     <div className="h-full overflow-auto rounded-xl border border-base-300 bg-base-200/60">
-      <table className="table table-md">
+      <table className="table table-pin-rows">
         <thead>
           <tr>
-            <th className="w-32 text-sm font-semibold text-base-content/60">
-              Time
-            </th>
-            <th className="w-32 text-sm font-semibold text-base-content/60">
-              Type
-            </th>
-            <th className="text-sm font-semibold text-base-content/60">
-              Message
-            </th>
+            <th className="w-24">Time</th>
+            <th className="w-32">Type</th>
+            <th>Message</th>
           </tr>
         </thead>
         <tbody>
@@ -154,17 +148,13 @@ const NotificationsTable = ({ logs }: { logs: Toast[] }) => {
             const style = severityStyles[toast.type]
             return (
               <tr key={toast.id} className="align-top">
-                <td className="text-sm text-base-content/60">
-                  {toast.timestamp}
-                </td>
-                <td className="text-sm">
-                  <span
-                    className={`badge badge-md ${style.badge} ${style.badgeText}`}
-                  >
+                <td className="text-base-content/60">{toast.timestamp}</td>
+                <td>
+                  <span className={`badge ${style.badge} ${style.badgeText}`}>
                     {toast.type.toUpperCase()}
                   </span>
                 </td>
-                <td className="text-sm text-base-content">{toast.message}</td>
+                <td className="text-base-content">{toast.message}</td>
               </tr>
             )
           })}
@@ -230,43 +220,33 @@ const RosoutTable = ({
           </div>
         ) : (
           <div className="h-full overflow-auto rounded-xl border border-base-300 bg-base-200/60">
-            <table className="table table-md">
+            <table className="table table-pin-rows">
               <thead>
                 <tr>
-                  <th className="w-32 text-sm font-semibold text-base-content/60">
-                    Time
-                  </th>
-                  <th className="w-24 text-sm font-semibold text-base-content/60">
-                    Level
-                  </th>
-                  <th className="w-64 text-sm font-semibold text-base-content/60">
-                    Node
-                  </th>
-                  <th className="text-sm font-semibold text-base-content/60">
-                    Message
-                  </th>
+                  <th className="w-24">Time</th>
+                  <th className="w-24">Level</th>
+                  <th className="w-64">Node</th>
+                  <th>Message</th>
                 </tr>
               </thead>
               <tbody>
                 {logs.map((log) => (
                   <tr key={log.id} className="align-top">
-                    <td className="text-sm text-base-content/60">
-                      {log.timestamp}
-                    </td>
-                    <td className="text-sm">
+                    <td className="text-base-content/60">{log.timestamp}</td>
+                    <td>
                       <span
                         className={`badge badge-md ${log.levelClass} text-base-100`}
                       >
                         {log.levelLabel}
                       </span>
                     </td>
-                    <td className="text-sm text-base-content">
+                    <td className="text-base-content">
                       <div className="font-medium">{log.name}</div>
                       <div className="text-xs text-base-content/60">
                         {log.function ?? '-'}
                       </div>
                     </td>
-                    <td className="text-sm text-base-content">
+                    <td className="text-base-content">
                       <p className="whitespace-pre-wrap text-base-content/90">
                         {log.message}
                       </p>
