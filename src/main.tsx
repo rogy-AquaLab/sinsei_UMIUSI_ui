@@ -4,19 +4,22 @@ import './index.css'
 import App from '@/App.tsx'
 import { ToastProvider } from '@/contexts/ToastContext'
 import { RosProvider } from '@/contexts/RosContext'
+import { RosoutProvider } from '@/contexts/RosoutContext'
 import { GamepadProvider } from '@/contexts/GamepadContext'
 import { RobotStateProvider } from '@/contexts/RobotStateContext'
 
 createRoot(document.getElementById('root')!).render(
   <ToastProvider>
     <RosProvider url="ws://localhost:9090">
-      <RobotStateProvider>
-        <GamepadProvider>
-          <StrictMode>
-            <App />
-          </StrictMode>
-        </GamepadProvider>
-      </RobotStateProvider>
+      <RosoutProvider>
+        <RobotStateProvider>
+          <GamepadProvider>
+            <StrictMode>
+              <App />
+            </StrictMode>
+          </GamepadProvider>
+        </RobotStateProvider>
+      </RosoutProvider>
     </RosProvider>
   </ToastProvider>,
 )
