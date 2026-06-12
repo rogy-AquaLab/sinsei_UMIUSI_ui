@@ -21,10 +21,8 @@ function App() {
           <div className="flex-1 min-h-0">
             {activeTab === 'camera' ? (
               <CameraViewer
-                hostname="http://umiusi2.local:8080"
-                topicName="/pi_camera/image_raw"
-                width={1024}
-                height={768}
+                hostname="http://umiusi2.local:8889"
+                camName="cam1"
               />
             ) : (
               <LogsView />
