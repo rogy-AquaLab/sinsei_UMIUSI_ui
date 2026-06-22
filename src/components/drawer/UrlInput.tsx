@@ -5,6 +5,7 @@ const UrlInput = () => {
 
   return (
     <input
+      id="rosbridge-url"
       type="url"
       className="input"
       required

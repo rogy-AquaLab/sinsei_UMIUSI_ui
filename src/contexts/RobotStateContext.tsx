@@ -1,25 +1,25 @@
 import {
   createContext,
-  useMemo,
-  useEffect,
-  useState,
   type PropsWithChildren,
   useCallback,
+  useEffect,
+  useMemo,
+  useState,
 } from 'react'
 import { Service, Topic } from 'roslib'
 import { useRos } from '@/hooks/useRos'
 import { useToast } from '@/hooks/useToast'
 import type { RobotState } from '@/msgs/OriginalMsgs'
 import type {
-  PowerOnResponce,
   PowerOffResponce,
+  PowerOnResponce,
   SetModeRequest,
   SetModeResponse,
 } from '@/msgs/OriginalServices'
 import {
   numToRobotMode,
-  type RobotMode,
   type OperationMode,
+  type RobotMode,
   RobotModeMap,
   robotModeToNum,
   robotModeToString,
@@ -254,7 +254,6 @@ const RobotStateProvider = ({ children }: PropsWithChildren) => {
     mode,
     modeTransitionState,
     operationMode,
-    setOperationMode,
     enterOperation,
     enterStandby,
   ])
@@ -262,4 +261,4 @@ const RobotStateProvider = ({ children }: PropsWithChildren) => {
   return <RobotStateContext value={contextValue}>{children}</RobotStateContext>
 }
 
-export { RobotStateProvider, RobotStateContext }
+export { RobotStateContext, RobotStateProvider }

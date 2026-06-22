@@ -14,6 +14,7 @@ const MainTabs = ({ active, onChange }: MainTabsProps) => {
       aria-label="Main content tabs"
     >
       <button
+        type="button"
         role="tab"
         className={`tab gap-2 ${active === 'camera' ? 'tab-active' : ''}`}
         onClick={() => onChange('camera')}
@@ -22,6 +23,7 @@ const MainTabs = ({ active, onChange }: MainTabsProps) => {
         Camera
       </button>
       <button
+        type="button"
         role="tab"
         className={`tab gap-2 ${active === 'logs' ? 'tab-active' : ''}`}
         onClick={() => onChange('logs')}

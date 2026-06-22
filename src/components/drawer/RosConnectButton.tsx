@@ -37,6 +37,7 @@ const RosConnectButton = () => {
   return (
     <li>
       <button
+        type="button"
         className={`is-drawer-close:tooltip is-drawer-close:tooltip-left ${tone}`}
         data-tip={label}
         onClick={handleClick}

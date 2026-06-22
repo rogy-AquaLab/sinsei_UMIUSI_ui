@@ -39,6 +39,7 @@ const MainPowerButton = () => {
   return (
     <li className={isDisabled ? 'menu-disabled' : ''}>
       <button
+        type="button"
         className={`is-drawer-close:tooltip is-drawer-close:tooltip-left ${tone} ${isDisabled && 'menu-disabled'}`}
         data-tip={label}
         onClick={() => setMainPower(!isOn)}

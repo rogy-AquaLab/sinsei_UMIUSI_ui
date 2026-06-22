@@ -1,10 +1,10 @@
 import {
   createContext,
-  useState,
   type PropsWithChildren,
   type ReactElement,
+  useState,
 } from 'react'
-import { FaInfoCircle, FaCheck, FaExclamationTriangle } from 'react-icons/fa'
+import { FaCheck, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa'
 import { FaXmark } from 'react-icons/fa6'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -93,6 +93,7 @@ const ToastProvider = ({ children }: PropsWithChildren) => {
               {icons[toast.type]}
               <span>{toast.message}</span>
               <button
+                type="button"
                 className="btn btn-xs btn-ghost"
                 onClick={() => removeToast(toast.id)}
               >
@@ -106,4 +107,4 @@ const ToastProvider = ({ children }: PropsWithChildren) => {
   )
 }
 
-export { ToastProvider, ToastContext }
+export { ToastContext, ToastProvider }
