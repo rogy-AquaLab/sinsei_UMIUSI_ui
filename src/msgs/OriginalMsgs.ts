@@ -1,4 +1,4 @@
-import * as GeometryMsgs from '@/msgs/GeometryMsgs'
+import type * as GeometryMsgs from '@/msgs/GeometryMsgs'
 import type { RobotModeNum } from '@/msgs/utils/RobotMode'
 
 export type Target = {

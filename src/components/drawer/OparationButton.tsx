@@ -1,5 +1,5 @@
-import { FaPlay, FaPause } from 'react-icons/fa6'
 import type { ReactElement } from 'react'
+import { FaPause, FaPlay } from 'react-icons/fa6'
 import { useRobotState } from '@/hooks/useRobotState'
 import { robotModeToString } from '@/msgs/utils/RobotMode'
 
@@ -48,6 +48,7 @@ const OperationButton = () => {
   return (
     <li className={isDisabled ? 'menu-disabled' : ''}>
       <button
+        type="button"
         className={`is-drawer-close:tooltip is-drawer-close:tooltip-left ${tone} ${
           isDisabled && 'menu-disabled'
         }`}

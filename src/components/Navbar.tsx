@@ -1,8 +1,8 @@
 import { FaAngleLeft } from 'react-icons/fa'
-import RosStatusBadge from '@/components/navbar/RosStatusBadge'
 import GamepadStatusIcon from '@/components/navbar/GamepadStatusIcon'
-import ModeIcon from '@/components/navbar/ModeIcon'
 import MainTabs from '@/components/navbar/MainTabs'
+import ModeIcon from '@/components/navbar/ModeIcon'
+import RosStatusBadge from '@/components/navbar/RosStatusBadge'
 import type { MainContentTab } from '@/types/navigation'
 
 type NavbarProps = {
@@ -14,14 +14,14 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
   return (
     <div className="navbar bg-base-100 shadow-sm">
       <div className="navbar-start">
-        <a className="btn btn-ghost text-xl">
+        <div className="btn btn-ghost text-xl">
           <img
             src="/aqua_logo_light.png"
             alt="Aqua Logo"
             className="h-15 w-15 mr-2"
           />
           SINSEI UMIUSI
-        </a>
+        </div>
       </div>
       <div className="navbar-center">
         <MainTabs active={activeTab} onChange={onTabChange} />

@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-import { useToast } from '@/hooks/useToast'
-import { useRosout } from '@/hooks/useRosout'
 import type { RosoutLog } from '@/contexts/RosoutContext'
 import type { Toast } from '@/contexts/ToastContext'
+import { useRosout } from '@/hooks/useRosout'
+import { useToast } from '@/hooks/useToast'
 import {
   RCL_LOG_LEVEL_DEBUG,
   RCL_LOG_LEVEL_ERROR,
@@ -72,6 +72,7 @@ const LogsView = () => {
           aria-label="Log type tabs"
         >
           <button
+            type="button"
             role="tab"
             className={`tab ${activeTab === 'notifications' ? 'tab-active' : ''}`}
             onClick={() => setActiveTab('notifications')}
@@ -79,6 +80,7 @@ const LogsView = () => {
             Notifications
           </button>
           <button
+            type="button"
             role="tab"
             className={`tab ${activeTab === 'rosout' ? 'tab-active' : ''}`}
             onClick={() => setActiveTab('rosout')}

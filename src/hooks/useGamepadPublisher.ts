@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react'
-import { Ros, Topic } from 'roslib'
-import { mapGamepad } from '@/utils/gamepadMapping'
+import { type Ros, Topic } from 'roslib'
 import { useGamepad } from '@/hooks/useGamepad'
-import * as Msgs from '@/msgs/OriginalMsgs'
 import { useLoop } from '@/hooks/useLoop'
+import type * as Msgs from '@/msgs/OriginalMsgs'
+import { mapGamepad } from '@/utils/gamepadMapping'
 
 type GamepadPublisherOptions = {
   ros: Ros | null

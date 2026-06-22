@@ -1,11 +1,11 @@
 import {
   createContext,
+  type PropsWithChildren,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type PropsWithChildren,
 } from 'react'
 import { useLoop } from '@/hooks/useLoop'
 import { useToast } from '@/hooks/useToast'
@@ -147,4 +147,4 @@ const GamepadProvider = ({
   return <GamepadContext value={contextValue}>{children}</GamepadContext>
 }
 
-export { GamepadProvider, GamepadContext }
+export { GamepadContext, GamepadProvider }

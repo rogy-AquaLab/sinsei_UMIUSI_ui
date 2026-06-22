@@ -7,6 +7,7 @@ const GamepadSelect = () => {
 
   return (
     <select
+      id="gamepad-select"
       className="select"
       disabled={Object.keys(gamepads).length === 0}
       value={selectedIndex ?? DEFAULT_TEXT}

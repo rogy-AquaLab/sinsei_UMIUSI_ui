@@ -1,10 +1,10 @@
 import type { PropsWithChildren } from 'react'
-import RosConnectButton from '@/components/drawer/RosConnectButton'
-import UrlInput from '@/components/drawer/UrlInput'
 import GamepadSelect from '@/components/drawer/GamepadSelect'
 import MainPowerButton from '@/components/drawer/MainPowerButton'
-import OperationModeSelect from '@/components/drawer/OperationModeSelect'
 import OperationButton from '@/components/drawer/OparationButton'
+import OperationModeSelect from '@/components/drawer/OperationModeSelect'
+import RosConnectButton from '@/components/drawer/RosConnectButton'
+import UrlInput from '@/components/drawer/UrlInput'
 
 const Drawer = ({ children }: PropsWithChildren) => {
   return (
@@ -23,11 +23,17 @@ const Drawer = ({ children }: PropsWithChildren) => {
           <div className="is-drawer-close:hidden w-full p-3">
             <fieldset className="fieldset bg-base-300 border-base-300 rounded-box border p-4">
               <legend className="fieldset-legend">Config</legend>
-              <label className="label">rosbridge URL</label>
+              <label htmlFor="rosbridge-url" className="label">
+                rosbridge URL
+              </label>
               <UrlInput />
-              <label className="label">Gamepad</label>
+              <label htmlFor="gamepad-select" className="label">
+                Gamepad
+              </label>
               <GamepadSelect />
-              <label className="label">Operation Mode</label>
+              <label htmlFor="mode-select" className="label">
+                Operation Mode
+              </label>
               <OperationModeSelect />
             </fieldset>
           </div>

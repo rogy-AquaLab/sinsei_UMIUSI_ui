@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import CameraViewer from '@/components/CameraViewer'
+import Drawer from '@/components/Drawer'
+import LogsView from '@/components/LogsView'
+import Navbar from '@/components/Navbar'
 import { useGamepadPublisher } from '@/hooks/useGamepadPublisher'
 import { useRos } from '@/hooks/useRos'
-import Navbar from '@/components/Navbar'
-import LogsView from '@/components/LogsView'
-import Drawer from '@/components/Drawer'
 import type { MainContentTab } from '@/types/navigation'
 
 function App() {
