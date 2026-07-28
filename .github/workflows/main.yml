@@ -5,14 +5,17 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'docs/**'
-      - '**.md'
+      - "docs/**"
+      - "**.md"
   pull_request:
     branches:
       - main
     paths-ignore:
-      - 'docs/**'
-      - '**.md'
+      - "docs/**"
+      - "**.md"
+
+permissions:
+  contents: read
 
 jobs:
   editorconfig-check:
@@ -36,18 +39,9 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22
-
-      - name: Cache Dependency
-        uses: actions/cache@v4
-        id: cache_dependency
-        env:
-          cache-name: cache-dependency
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
+          cache: npm
 
       - name: Install Dependency
-        if: ${{ steps.cache_dependency.outputs.cache-hit != 'true' }}
         run: npm ci
 
       - name: Check Format
@@ -55,3 +49,6 @@ jobs:
 
       - name: Check Lint
         run: npm run check:lint
+
+      - name: Build
+        run: npm run build
