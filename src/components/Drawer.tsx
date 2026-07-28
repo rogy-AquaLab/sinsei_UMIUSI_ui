@@ -24,7 +24,7 @@ const Drawer = ({ children }: PropsWithChildren) => {
             <fieldset className="fieldset bg-base-300 border-base-300 rounded-box border p-4">
               <legend className="fieldset-legend">Config</legend>
               <label htmlFor="rosbridge-url" className="label">
-                rosbridge URL
+                rosbridge WebSocket URL
               </label>
               <UrlInput />
               <label htmlFor="gamepad-select" className="label">

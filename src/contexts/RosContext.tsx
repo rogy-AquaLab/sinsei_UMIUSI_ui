@@ -89,7 +89,7 @@ const RosProvider = ({ children, url: initialUrl }: RosProviderProps) => {
     const handleConnection = () => {
       setConnectionState('connected')
       console.log('Connected to rosbridge server.')
-      toast?.show('Connected to rosbridge server.', 'success')
+      toast?.show('Connected to ROS.', 'success')
     }
 
     const handleClose = () => {
@@ -98,18 +98,15 @@ const RosProvider = ({ children, url: initialUrl }: RosProviderProps) => {
       switch (connectionStateRef.current) {
         case 'disconnecting':
           console.log('Disconnected from rosbridge server.')
-          toast?.show('Disconnected from rosbridge server.', 'success')
+          toast?.show('Disconnected from ROS.', 'success')
           break
         case 'cancel_connecting':
           console.log('Connection attempt to rosbridge server canceled.')
-          toast?.show(
-            'Connection attempt to rosbridge server canceled.',
-            'info',
-          )
+          toast?.show('Connection attempt to ROS canceled.', 'info')
           break
         case 'connected':
           console.log('Connection to rosbridge server lost.')
-          toast?.show('Connection to rosbridge server lost.', 'error')
+          toast?.show('Connection to ROS lost.', 'error')
           break
         default:
           break
@@ -129,7 +126,7 @@ const RosProvider = ({ children, url: initialUrl }: RosProviderProps) => {
         return
 
       console.log('Failed to connect to rosbridge server.')
-      toast?.show('Failed to connect to rosbridge server.', 'error')
+      toast?.show('Failed to connect to ROS.', 'error')
 
       setConnectionState('disconnected')
       detachHandlers()

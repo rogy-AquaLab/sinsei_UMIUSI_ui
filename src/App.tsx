@@ -3,6 +3,7 @@ import CameraViewer from '@/components/CameraViewer'
 import Drawer from '@/components/Drawer'
 import LogsView from '@/components/LogsView'
 import Navbar from '@/components/Navbar'
+import StatusView from '@/components/StatusView'
 import { useGamepadPublisher } from '@/hooks/useGamepadPublisher'
 import { useRos } from '@/hooks/useRos'
 import type { MainContentTab } from '@/types/navigation'
@@ -24,8 +25,10 @@ function App() {
                 hostname="http://umiusi2.local:8889"
                 camName="cam1"
               />
-            ) : (
+            ) : activeTab === 'logs' ? (
               <LogsView />
+            ) : (
+              <StatusView />
             )}
           </div>
         </div>
