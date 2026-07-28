@@ -9,7 +9,11 @@ import {
 import { Topic } from 'roslib'
 import { useLoop } from '@/hooks/useLoop'
 import { useRos } from '@/hooks/useRos'
-import type { HealthCheckResult } from '@/msgs/OriginalMsgs'
+import type {
+  HealthCheckResult,
+  HighPowerCircuitInfo,
+  LowPowerCircuitInfo,
+} from '@/msgs/OriginalMsgs'
 
 export type HealthStatus = 'unknown' | 'ok' | 'error' | 'stale'
 
@@ -18,9 +22,16 @@ export type HealthReading = {
   receivedAt: number
 }
 
+export type CircuitInfoReading<T> = {
+  value: T
+  receivedAt: number
+}
+
 type HealthContextValue = {
   lowPower: HealthReading | null
   highPower: HealthReading | null
+  lowPowerInfo: CircuitInfoReading<LowPowerCircuitInfo> | null
+  highPowerInfo: CircuitInfoReading<HighPowerCircuitInfo> | null
   lowPowerStatus: HealthStatus
   highPowerStatus: HealthStatus
   overallStatus: HealthStatus
@@ -53,6 +64,10 @@ const HealthProvider = ({ children }: PropsWithChildren) => {
   const { ros, connectionState } = useRos()
   const [lowPower, setLowPower] = useState<HealthReading | null>(null)
   const [highPower, setHighPower] = useState<HealthReading | null>(null)
+  const [lowPowerInfo, setLowPowerInfo] =
+    useState<CircuitInfoReading<LowPowerCircuitInfo> | null>(null)
+  const [highPowerInfo, setHighPowerInfo] =
+    useState<CircuitInfoReading<HighPowerCircuitInfo> | null>(null)
   const [now, setNow] = useState(Date.now())
 
   const updateNow = useCallback(() => setNow(Date.now()), [])
@@ -62,6 +77,8 @@ const HealthProvider = ({ children }: PropsWithChildren) => {
     if (connectionState === 'connected') return
     setLowPower(null)
     setHighPower(null)
+    setLowPowerInfo(null)
+    setHighPowerInfo(null)
   }, [connectionState])
 
   useEffect(() => {
@@ -77,6 +94,16 @@ const HealthProvider = ({ children }: PropsWithChildren) => {
       name: '/high_power_health_check_result',
       messageType: 'sinsei_umiusi_msgs/msg/HealthCheckResult',
     })
+    const lowPowerInfoTopic = new Topic({
+      ros,
+      name: '/state/low_power_circuit_info',
+      messageType: 'sinsei_umiusi_msgs/msg/LowPowerCircuitInfo',
+    })
+    const highPowerInfoTopic = new Topic({
+      ros,
+      name: '/state/high_power_circuit_info',
+      messageType: 'sinsei_umiusi_msgs/msg/HighPowerCircuitInfo',
+    })
 
     const handleLowPower = (message: unknown) => {
       const result = message as HealthCheckResult
@@ -86,13 +113,29 @@ const HealthProvider = ({ children }: PropsWithChildren) => {
       const result = message as HealthCheckResult
       setHighPower({ isOk: result.is_ok, receivedAt: Date.now() })
     }
+    const handleLowPowerInfo = (message: unknown) => {
+      setLowPowerInfo({
+        value: message as LowPowerCircuitInfo,
+        receivedAt: Date.now(),
+      })
+    }
+    const handleHighPowerInfo = (message: unknown) => {
+      setHighPowerInfo({
+        value: message as HighPowerCircuitInfo,
+        receivedAt: Date.now(),
+      })
+    }
 
     lowPowerTopic.subscribe(handleLowPower)
     highPowerTopic.subscribe(handleHighPower)
+    lowPowerInfoTopic.subscribe(handleLowPowerInfo)
+    highPowerInfoTopic.subscribe(handleHighPowerInfo)
 
     return () => {
       lowPowerTopic.unsubscribe()
       highPowerTopic.unsubscribe()
+      lowPowerInfoTopic.unsubscribe()
+      highPowerInfoTopic.unsubscribe()
     }
   }, [ros])
 
@@ -105,11 +148,21 @@ const HealthProvider = ({ children }: PropsWithChildren) => {
     () => ({
       lowPower,
       highPower,
+      lowPowerInfo,
+      highPowerInfo,
       lowPowerStatus,
       highPowerStatus,
       overallStatus,
     }),
-    [lowPower, highPower, lowPowerStatus, highPowerStatus, overallStatus],
+    [
+      lowPower,
+      highPower,
+      lowPowerInfo,
+      highPowerInfo,
+      lowPowerStatus,
+      highPowerStatus,
+      overallStatus,
+    ],
   )
 
   return (
