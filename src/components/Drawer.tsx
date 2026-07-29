@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'react'
+import CameraConfigInputs from '@/components/drawer/CameraConfigInputs'
 import GamepadSelect from '@/components/drawer/GamepadSelect'
 import MainPowerButton from '@/components/drawer/MainPowerButton'
 import OperationButton from '@/components/drawer/OparationButton'
@@ -27,6 +28,7 @@ const Drawer = ({ children }: PropsWithChildren) => {
                 rosbridge URL
               </label>
               <UrlInput />
+              <CameraConfigInputs />
               <label htmlFor="gamepad-select" className="label">
                 Gamepad
               </label>

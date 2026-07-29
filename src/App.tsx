@@ -16,14 +16,7 @@ function App() {
         <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
         <div className="flex flex-1 min-h-0 flex-col bg-base-200">
           <div className="flex-1 min-h-0">
-            {activeTab === 'camera' ? (
-              <CameraViewer
-                hostname="http://umiusi2.local:8889"
-                camName="cam1"
-              />
-            ) : (
-              <LogsView />
-            )}
+            {activeTab === 'camera' ? <CameraViewer /> : <LogsView />}
           </div>
         </div>
       </div>
