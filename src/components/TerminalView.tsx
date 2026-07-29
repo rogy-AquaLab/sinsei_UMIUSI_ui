@@ -1,15 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
 import { FaPlus, FaTerminal, FaTimes } from 'react-icons/fa'
 import TerminalLogin from '@/components/terminal/TerminalLogin'
 import TerminalPane from '@/components/terminal/TerminalPane'
-import { useTerminalSession } from '@/hooks/useTerminalSession'
-
-type TerminalTab = {
-  id: string
-  title: string
-}
-
-const newTerminalId = () => crypto.randomUUID()
+import { useTerminal } from '@/hooks/useTerminal'
 
 const TerminalView = () => {
   const {
@@ -18,60 +10,12 @@ const TerminalView = () => {
     maxTerminals,
     connect,
     disconnect,
-    send,
-    subscribeTerminal,
-  } = useTerminalSession()
-  const [tabs, setTabs] = useState<TerminalTab[]>([])
-  const [activeTerminalId, setActiveTerminalId] = useState<string | null>(null)
-  const createdInitialTerminalRef = useRef(false)
-
-  const addTerminal = useCallback(() => {
-    const id = newTerminalId()
-    const tab = {
-      id,
-      title: 'Starting…',
-    }
-    setTabs((current) => [...current, tab])
-    setActiveTerminalId(id)
-  }, [])
-
-  useEffect(() => {
-    if (state === 'connected' && !createdInitialTerminalRef.current) {
-      createdInitialTerminalRef.current = true
-      addTerminal()
-    }
-    if (state === 'disconnected') {
-      createdInitialTerminalRef.current = false
-      setTabs([])
-      setActiveTerminalId(null)
-    }
-  }, [addTerminal, state])
-
-  const updateProcessName = useCallback(
-    (terminalId: string, processName: string) => {
-      setTabs((current) =>
-        current.map((tab) =>
-          tab.id === terminalId ? { ...tab, title: processName } : tab,
-        ),
-      )
-    },
-    [],
-  )
-
-  const closeTerminal = (terminalId: string) => {
-    send({ type: 'terminal.close', terminalId })
-    setTabs((current) => {
-      const closingIndex = current.findIndex((tab) => tab.id === terminalId)
-      const remaining = current.filter((tab) => tab.id !== terminalId)
-
-      if (activeTerminalId === terminalId) {
-        const nextActive =
-          remaining[Math.min(closingIndex, remaining.length - 1)] ?? null
-        setActiveTerminalId(nextActive?.id ?? null)
-      }
-      return remaining
-    })
-  }
+    tabs,
+    activeTerminalId,
+    addTerminal,
+    closeTerminal,
+    activateTerminal,
+  } = useTerminal()
 
   if (state !== 'connected') {
     return <TerminalLogin state={state} error={error} onConnect={connect} />
@@ -104,7 +48,7 @@ const TerminalView = () => {
                     role="tab"
                     aria-selected={isActive}
                     className="flex h-full items-center gap-2 ps-1"
-                    onClick={() => setActiveTerminalId(tab.id)}
+                    onClick={() => activateTerminal(tab.id)}
                   >
                     <FaTerminal className="size-3" />
                     {tab.title}
@@ -181,24 +125,16 @@ const TerminalView = () => {
               </button>
             </div>
           </div>
-        ) : (
-          tabs.map((tab) => (
-            <div
-              key={tab.id}
-              role="tabpanel"
-              aria-labelledby={`terminal-tab-${tab.id}`}
-              className="absolute inset-0"
-            >
-              <TerminalPane
-                terminalId={tab.id}
-                active={activeTerminalId === tab.id}
-                send={send}
-                subscribe={subscribeTerminal}
-                onProcessName={updateProcessName}
-              />
-            </div>
-          ))
-        )}
+        ) : activeTerminalId ? (
+          <div
+            key={activeTerminalId}
+            role="tabpanel"
+            aria-labelledby={`terminal-tab-${activeTerminalId}`}
+            className="absolute inset-0"
+          >
+            <TerminalPane terminalId={activeTerminalId} />
+          </div>
+        ) : null}
       </div>
     </div>
   )

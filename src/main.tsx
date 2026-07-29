@@ -6,6 +6,7 @@ import { GamepadProvider } from '@/contexts/GamepadContext'
 import { RobotStateProvider } from '@/contexts/RobotStateContext'
 import { RosProvider } from '@/contexts/RosContext'
 import { RosoutProvider } from '@/contexts/RosoutContext'
+import { TerminalProvider } from '@/contexts/TerminalContext'
 import { ToastProvider } from '@/contexts/ToastContext'
 
 const rootElement = document.getElementById('root')
@@ -21,7 +22,9 @@ createRoot(rootElement).render(
         <RobotStateProvider>
           <GamepadProvider>
             <StrictMode>
-              <App />
+              <TerminalProvider>
+                <App />
+              </TerminalProvider>
             </StrictMode>
           </GamepadProvider>
         </RobotStateProvider>

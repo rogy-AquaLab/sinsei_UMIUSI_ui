@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import CameraViewer from '@/components/CameraViewer'
 import Drawer from '@/components/Drawer'
 import LogsView from '@/components/LogsView'
@@ -12,21 +12,13 @@ const TerminalView = lazy(() => import('@/components/TerminalView'))
 function App() {
   const { ros } = useRos()
   const [activeTab, setActiveTab] = useState<MainContentTab>('camera')
-  const [terminalOpened, setTerminalOpened] = useState(false)
-
-  const handleTabChange = useCallback((tab: MainContentTab) => {
-    if (tab === 'terminal') {
-      setTerminalOpened(true)
-    }
-    setActiveTab(tab)
-  }, [])
 
   useGamepadPublisher({ ros })
 
   return (
     <Drawer>
       <div className="flex h-screen flex-col overflow-hidden">
-        <Navbar activeTab={activeTab} onTabChange={handleTabChange} />
+        <Navbar activeTab={activeTab} onTabChange={setActiveTab} />
         <div className="flex flex-1 min-h-0 flex-col bg-base-200">
           <div className="flex-1 min-h-0">
             <div
@@ -40,12 +32,8 @@ function App() {
             <div className={activeTab === 'logs' ? 'h-full' : 'hidden h-full'}>
               <LogsView />
             </div>
-            {terminalOpened && (
-              <div
-                className={
-                  activeTab === 'terminal' ? 'h-full' : 'hidden h-full'
-                }
-              >
+            {activeTab === 'terminal' && (
+              <div className="h-full">
                 <Suspense
                   fallback={
                     <div className="flex h-full items-center justify-center">
