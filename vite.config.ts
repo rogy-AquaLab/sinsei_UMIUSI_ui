@@ -8,5 +8,11 @@ export default defineConfig({
   plugins: [react(), tailwindcss(), tsconfigPaths()],
   server: {
     allowedHosts: ['umiusi2.local'],
+    proxy: {
+      '/api/terminal': {
+        target: 'http://127.0.0.1:3001',
+        ws: true,
+      },
+    },
   },
 })
