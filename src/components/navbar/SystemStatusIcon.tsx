@@ -7,51 +7,42 @@ const SystemStatusIcon = () => {
   const { connectionState } = useRos()
   const { overallStatus } = useHealth()
   const { telemetryStatus } = useThrusterState()
-  const isTransitioning =
-    connectionState === 'connecting' ||
-    connectionState === 'cancel_connecting' ||
-    connectionState === 'disconnecting'
 
   const config =
-    connectionState === 'disconnected'
+    connectionState !== 'connected'
       ? {
-          label: 'ROS disconnected',
-          tone: 'text-error',
+          label: 'System status unavailable',
+          tone: 'text-base-content/30',
         }
-      : isTransitioning
+      : overallStatus === 'error'
         ? {
-            label: 'Connection changing',
-            tone: 'text-warning',
+            label: 'Health check failed',
+            tone: 'text-error',
           }
-        : overallStatus === 'error'
+        : overallStatus === 'stale'
           ? {
-              label: 'Health check failed',
-              tone: 'text-error',
+              label: 'Health data outdated',
+              tone: 'text-warning',
             }
-          : overallStatus === 'stale'
+          : overallStatus === 'unknown'
             ? {
-                label: 'Health data outdated',
+                label: 'Health status unknown',
                 tone: 'text-warning',
               }
-            : overallStatus === 'unknown'
+            : telemetryStatus === 'stale'
               ? {
-                  label: 'Health status unknown',
-                  tone: 'text-base-content/30',
+                  label: 'Thruster telemetry outdated',
+                  tone: 'text-warning',
                 }
-              : telemetryStatus === 'stale'
+              : telemetryStatus === 'unknown'
                 ? {
-                    label: 'Thruster telemetry outdated',
+                    label: 'Thruster telemetry unavailable',
                     tone: 'text-warning',
                   }
-                : telemetryStatus === 'unknown'
-                  ? {
-                      label: 'Thruster telemetry unavailable',
-                      tone: 'text-base-content/30',
-                    }
-                  : {
-                      label: 'Health check passed',
-                      tone: 'text-success',
-                    }
+                : {
+                    label: 'System status normal',
+                    tone: 'text-success',
+                  }
 
   return (
     <div
@@ -60,7 +51,7 @@ const SystemStatusIcon = () => {
       role="img"
       aria-label={config.label}
     >
-      <FaHeartbeat className={isTransitioning ? 'animate-pulse' : ''} />
+      <FaHeartbeat />
     </div>
   )
 }

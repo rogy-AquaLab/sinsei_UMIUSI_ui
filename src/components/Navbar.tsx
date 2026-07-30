@@ -2,6 +2,7 @@ import { FaAngleLeft } from 'react-icons/fa'
 import GamepadStatusIcon from '@/components/navbar/GamepadStatusIcon'
 import MainTabs from '@/components/navbar/MainTabs'
 import ModeIcon from '@/components/navbar/ModeIcon'
+import RosConnectionStatusIcon from '@/components/navbar/RosConnectionStatusIcon'
 import SystemStatusIcon from '@/components/navbar/SystemStatusIcon'
 import type { MainContentTab } from '@/types/navigation'
 
@@ -31,6 +32,7 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
           <GamepadStatusIcon />
           <ModeIcon />
           <SystemStatusIcon />
+          <RosConnectionStatusIcon />
           <label
             htmlFor="my-drawer"
             aria-label="open sidebar"
