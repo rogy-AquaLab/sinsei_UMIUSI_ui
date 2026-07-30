@@ -66,11 +66,9 @@ export class TerminalManager {
   }
 
   closeAll() {
-    for (const terminal of this.#terminals.values()) {
-      clearInterval(terminal.processPoller)
-      terminal.pty.kill()
+    for (const terminalId of [...this.#terminals.keys()]) {
+      this.destroy(terminalId)
     }
-    this.#terminals.clear()
   }
 
   private create(terminalId: string, cols: number, rows: number) {
@@ -138,8 +136,8 @@ export class TerminalManager {
     terminal.onExit(({ exitCode, signal }) => {
       const managedTerminal = this.#terminals.get(terminalId)
       if (managedTerminal?.pty !== terminal) return
-      clearInterval(managedTerminal.processPoller)
       this.#terminals.delete(terminalId)
+      clearInterval(managedTerminal.processPoller)
       this.send({
         type: 'terminal.exited',
         terminalId,
@@ -164,11 +162,19 @@ export class TerminalManager {
   }
 
   private close(terminalId: string) {
+    this.destroy(terminalId)
+  }
+
+  private destroy(terminalId: string) {
     const terminal = this.#terminals.get(terminalId)
     if (!terminal) return
     this.#terminals.delete(terminalId)
     clearInterval(terminal.processPoller)
-    terminal.pty.kill()
+    try {
+      terminal.pty.kill()
+    } catch (error) {
+      console.error(`Could not stop terminal ${terminalId}`, error)
+    }
   }
 
   private sendError(code: string, message: string, terminalId?: string) {

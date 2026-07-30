@@ -8,14 +8,17 @@ type TicketRecord = {
 export class TicketStore {
   readonly #tickets = new Map<string, TicketRecord>()
 
-  constructor(private readonly ttlMs: number) {}
+  constructor(
+    private readonly ttlMs: number,
+    private readonly now: () => number = Date.now,
+  ) {}
 
   issue(clientAddress: string) {
     this.prune()
     const ticket = randomBytes(32).toString('base64url')
     this.#tickets.set(this.hash(ticket), {
       clientAddress,
-      expiresAt: Date.now() + this.ttlMs,
+      expiresAt: this.now() + this.ttlMs,
     })
     return ticket
   }
@@ -28,7 +31,7 @@ export class TicketStore {
 
     return Boolean(
       record &&
-        record.expiresAt > Date.now() &&
+        record.expiresAt > this.now() &&
         record.clientAddress === clientAddress,
     )
   }
@@ -38,7 +41,7 @@ export class TicketStore {
   }
 
   private prune() {
-    const now = Date.now()
+    const now = this.now()
     for (const [ticket, record] of this.#tickets) {
       if (record.expiresAt <= now) this.#tickets.delete(ticket)
     }

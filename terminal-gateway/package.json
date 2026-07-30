@@ -8,7 +8,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "check": "tsc --noEmit",
+    "check": "tsc --noEmit && tsc --project tsconfig.test.json",
+    "test": "node --import tsx --test test/**/*.test.ts",
     "prepare:pty": "node scripts/ensure-node-pty-helper.mjs",
     "dev": "npm run prepare:pty && tsx watch src/server.ts",
     "start": "npm run prepare:pty && node dist/server.js",
