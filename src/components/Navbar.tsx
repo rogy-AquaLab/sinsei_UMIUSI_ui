@@ -2,7 +2,8 @@ import { FaAngleLeft } from 'react-icons/fa'
 import GamepadStatusIcon from '@/components/navbar/GamepadStatusIcon'
 import MainTabs from '@/components/navbar/MainTabs'
 import ModeIcon from '@/components/navbar/ModeIcon'
-import RosStatusBadge from '@/components/navbar/RosStatusBadge'
+import RosConnectionStatusIcon from '@/components/navbar/RosConnectionStatusIcon'
+import SystemStatusIcon from '@/components/navbar/SystemStatusIcon'
 import type { MainContentTab } from '@/types/navigation'
 
 type NavbarProps = {
@@ -20,7 +21,7 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
             alt="Aqua Logo"
             className="h-15 w-15 mr-2"
           />
-          SINSEI UMIUSI
+          <span className="hidden lg:inline">SINSEI UMIUSI</span>
         </div>
       </div>
       <div className="navbar-center">
@@ -30,7 +31,8 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
         <div className="flex items-center gap-5">
           <GamepadStatusIcon />
           <ModeIcon />
-          <RosStatusBadge />
+          <SystemStatusIcon />
+          <RosConnectionStatusIcon />
           <label
             htmlFor="my-drawer"
             aria-label="open sidebar"

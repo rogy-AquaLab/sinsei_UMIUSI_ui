@@ -1,1 +1,1 @@
-export type MainContentTab = 'camera' | 'logs'
+export type MainContentTab = 'camera' | 'logs' | 'status'

@@ -1,4 +1,4 @@
-import { FaCamera, FaClipboardList } from 'react-icons/fa'
+import { FaCamera, FaClipboardList, FaHeartbeat } from 'react-icons/fa'
 import type { MainContentTab } from '@/types/navigation'
 
 type MainTabsProps = {
@@ -30,6 +30,15 @@ const MainTabs = ({ active, onChange }: MainTabsProps) => {
       >
         <FaClipboardList />
         Logs
+      </button>
+      <button
+        type="button"
+        role="tab"
+        className={`tab gap-2 ${active === 'status' ? 'tab-active' : ''}`}
+        onClick={() => onChange('status')}
+      >
+        <FaHeartbeat />
+        Status
       </button>
     </div>
   )
