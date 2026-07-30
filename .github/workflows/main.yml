@@ -29,26 +29,23 @@ jobs:
       - name: EditorConfig Check
         run: editorconfig-checker
 
-  lint-and-format:
-    name: Lint and Format Check
+  quality-check:
+    name: Lint, Format, and Build Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
-      - name: Install Dependency
-        run: npm ci
+      - name: Install Dependencies
+        run: bun ci
 
       - name: Check Format
-        run: npm run check:format
+        run: bun run check:format
 
       - name: Check Lint
-        run: npm run check:lint
+        run: bun run check:lint
 
       - name: Build
-        run: npm run build
+        run: bun run build
