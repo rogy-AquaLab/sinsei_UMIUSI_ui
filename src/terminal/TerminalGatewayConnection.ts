@@ -1,9 +1,10 @@
-import type {
-  TerminalClientMessage,
-  TerminalConnectionState,
-  TerminalScopedMessage,
-  TerminalServerMessage,
-} from '@/types/terminal'
+import {
+  isTerminalScopedMessage,
+  parseTerminalServerMessage,
+  type TerminalClientMessage,
+  type TerminalScopedMessage,
+} from '@sinsei-umiusi/terminal-protocol'
+import type { TerminalConnectionState } from '@/terminal/connectionState'
 
 type TerminalListener = (message: TerminalScopedMessage) => void
 
@@ -171,12 +172,8 @@ export class TerminalGatewayConnection {
       socket.addEventListener('message', (event) => {
         if (this.#socket !== socket || typeof event.data !== 'string') return
 
-        let message: TerminalServerMessage
-        try {
-          message = JSON.parse(event.data) as TerminalServerMessage
-        } catch {
-          return
-        }
+        const message = parseTerminalServerMessage(event.data)
+        if (!message) return
 
         if (message.type === 'connection.ready') {
           if (settled) return
@@ -191,7 +188,7 @@ export class TerminalGatewayConnection {
           this.#options.onErrorChange(message.message)
         }
 
-        if ('terminalId' in message && message.terminalId) {
+        if (isTerminalScopedMessage(message)) {
           const listeners = this.#listeners.get(message.terminalId)
           if (!listeners) return
           for (const listener of listeners) listener(message)

@@ -3,11 +3,11 @@ import {
   type IncomingMessage,
   type ServerResponse,
 } from 'node:http'
+import { parseTerminalClientMessage } from '@sinsei-umiusi/terminal-protocol'
 import { parse as parseCookie, serialize as serializeCookie } from 'cookie'
 import { WebSocketServer } from 'ws'
 import { config, ticketCookieName } from './config.js'
 import { verifyPasswordHash } from './password.js'
-import { parseClientMessage } from './protocol.js'
 import { AuthenticationRateLimiter } from './rateLimiter.js'
 import { TerminalManager } from './terminalManager.js'
 import { TicketStore } from './tickets.js'
@@ -218,7 +218,7 @@ webSocketServer.on('connection', (socket) => {
       return
     }
 
-    const message = parseClientMessage(data.toString('utf8'))
+    const message = parseTerminalClientMessage(data.toString('utf8'))
     if (!message) {
       socket.send(
         JSON.stringify({

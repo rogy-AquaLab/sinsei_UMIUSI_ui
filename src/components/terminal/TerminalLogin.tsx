@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from 'react'
 import { FaLock } from 'react-icons/fa'
-import type { TerminalConnectionState } from '@/types/terminal'
+import type { TerminalConnectionState } from '@/terminal/connectionState'
 
 type TerminalLoginProps = {
   state: TerminalConnectionState

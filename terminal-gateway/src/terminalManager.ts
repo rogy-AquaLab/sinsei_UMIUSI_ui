@@ -1,9 +1,12 @@
 import { basename } from 'node:path'
+import type {
+  TerminalClientMessage,
+  TerminalServerMessage,
+} from '@sinsei-umiusi/terminal-protocol'
 import type { IPty } from 'node-pty'
 import * as pty from 'node-pty'
 import type { WebSocket } from 'ws'
 import { config } from './config.js'
-import type { ClientMessage, ServerMessage } from './protocol.js'
 
 const shellEnvironment = () => {
   const environment: Record<string, string> = {}
@@ -45,7 +48,7 @@ export class TerminalManager {
 
   constructor(private readonly socket: WebSocket) {}
 
-  handle(message: ClientMessage) {
+  handle(message: TerminalClientMessage) {
     switch (message.type) {
       case 'terminal.create':
         this.create(message.terminalId, message.cols, message.rows)
@@ -172,7 +175,7 @@ export class TerminalManager {
     this.send({ type: 'error', code, message, terminalId })
   }
 
-  private send(message: ServerMessage) {
+  private send(message: TerminalServerMessage) {
     if (this.socket.readyState === this.socket.OPEN) {
       this.socket.send(JSON.stringify(message))
     }

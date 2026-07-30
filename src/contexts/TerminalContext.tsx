@@ -7,9 +7,10 @@ import {
   useRef,
   useState,
 } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { useTerminalGateway } from '@/hooks/useTerminalGateway'
+import type { TerminalConnectionState } from '@/terminal/connectionState'
 import { XtermRegistry } from '@/terminal/XtermRegistry'
-import type { TerminalConnectionState } from '@/types/terminal'
 
 export type TerminalTab = {
   id: string
@@ -33,7 +34,7 @@ type TerminalContextValue = {
 
 const TerminalContext = createContext<TerminalContextValue | null>(null)
 
-const newTerminalId = () => crypto.randomUUID()
+const newTerminalId = () => uuidv4()
 
 type TerminalUiState = {
   tabs: TerminalTab[]

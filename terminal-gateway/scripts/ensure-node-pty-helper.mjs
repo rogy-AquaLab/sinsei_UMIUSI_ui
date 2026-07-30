@@ -1,26 +1,19 @@
 import { chmod, stat } from 'node:fs/promises'
-import { join } from 'node:path'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
 
 if (process.platform === 'darwin') {
+  const require = createRequire(import.meta.url)
+  const nodePtyDirectory = dirname(require.resolve('node-pty/package.json'))
   const helperPath = join(
-    process.cwd(),
-    'node_modules',
-    'node-pty',
+    nodePtyDirectory,
     'prebuilds',
     `${process.platform}-${process.arch}`,
     'spawn-helper',
   )
 
-  try {
-    const helper = await stat(helperPath)
-    if ((helper.mode & 0o100) === 0) {
-      await chmod(helperPath, helper.mode | 0o700)
-    }
-  } catch (error) {
-    if (
-      !(error instanceof Error && 'code' in error && error.code === 'ENOENT')
-    ) {
-      throw error
-    }
+  const helper = await stat(helperPath)
+  if ((helper.mode & 0o100) === 0) {
+    await chmod(helperPath, helper.mode | 0o700)
   }
 }

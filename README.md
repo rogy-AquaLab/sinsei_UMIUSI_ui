@@ -10,11 +10,10 @@ Each tab owns a separate PTY process.
 
 ### Local development
 
-Install the UI and gateway dependencies separately:
+Install the workspace dependencies:
 
 ```sh
 npm install
-npm --prefix terminal-gateway install
 ```
 
 Run the gateway with a development-only plaintext password:

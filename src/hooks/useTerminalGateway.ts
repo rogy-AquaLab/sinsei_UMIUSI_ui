@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { TerminalGatewayConnection } from '@/terminal/TerminalGatewayConnection'
 import type {
   TerminalClientMessage,
-  TerminalConnectionState,
   TerminalScopedMessage,
-} from '@/types/terminal'
+} from '@sinsei-umiusi/terminal-protocol'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { TerminalConnectionState } from '@/terminal/connectionState'
+import { TerminalGatewayConnection } from '@/terminal/TerminalGatewayConnection'
 
 export const useTerminalGateway = () => {
   const [state, setState] = useState<TerminalConnectionState>('disconnected')

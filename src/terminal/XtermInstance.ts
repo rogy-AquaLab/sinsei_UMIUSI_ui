@@ -4,7 +4,7 @@ import '@xterm/xterm/css/xterm.css'
 import type {
   TerminalClientMessage,
   TerminalScopedMessage,
-} from '@/types/terminal'
+} from '@sinsei-umiusi/terminal-protocol'
 
 type SendTerminalMessage = (message: TerminalClientMessage) => boolean
 type SubscribeTerminal = (

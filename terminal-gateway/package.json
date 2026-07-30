@@ -15,6 +15,7 @@
     "hash-password": "tsx src/hashPassword.ts"
   },
   "dependencies": {
+    "@sinsei-umiusi/terminal-protocol": "*",
     "cookie": "^1.0.2",
     "node-pty": "^1.1.0",
     "ws": "^8.21.1"
