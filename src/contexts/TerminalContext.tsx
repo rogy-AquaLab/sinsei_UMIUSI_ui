@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useTerminalSession } from '@/hooks/useTerminalSession'
+import { useTerminalGateway } from '@/hooks/useTerminalGateway'
 import { XtermRegistry } from '@/terminal/XtermRegistry'
 import type { TerminalConnectionState } from '@/types/terminal'
 
@@ -46,7 +46,7 @@ const emptyTerminalUiState: TerminalUiState = {
 }
 
 const TerminalProvider = ({ children }: PropsWithChildren) => {
-  const session = useTerminalSession()
+  const gateway = useTerminalGateway()
   const [terminalUi, setTerminalUi] =
     useState<TerminalUiState>(emptyTerminalUiState)
   const createdInitialTerminalRef = useRef(false)
@@ -66,24 +66,24 @@ const TerminalProvider = ({ children }: PropsWithChildren) => {
   const xtermRegistry = useMemo(
     () =>
       new XtermRegistry({
-        send: session.send,
-        subscribe: session.subscribeTerminal,
+        send: gateway.send,
+        subscribe: gateway.subscribeTerminal,
         onProcessName: updateProcessName,
       }),
-    [session.send, session.subscribeTerminal, updateProcessName],
+    [gateway.send, gateway.subscribeTerminal, updateProcessName],
   )
 
   const addTerminal = useCallback(() => {
     const id = newTerminalId()
     setTerminalUi((current) => {
-      if (current.tabs.length >= session.maxTerminals) return current
+      if (current.tabs.length >= gateway.maxTerminals) return current
 
       return {
         tabs: [...current.tabs, { id, title: 'Starting…' }],
         activeTerminalId: id,
       }
     })
-  }, [session.maxTerminals])
+  }, [gateway.maxTerminals])
 
   const closeTerminal = useCallback(
     (terminalId: string) => {
@@ -133,32 +133,32 @@ const TerminalProvider = ({ children }: PropsWithChildren) => {
 
   const disconnect = useCallback(() => {
     xtermRegistry.closeAll(true)
-    session.disconnect()
-  }, [session.disconnect, xtermRegistry])
+    gateway.disconnect()
+  }, [gateway.disconnect, xtermRegistry])
 
   useEffect(() => {
-    if (session.state === 'connected' && !createdInitialTerminalRef.current) {
+    if (gateway.state === 'connected' && !createdInitialTerminalRef.current) {
       createdInitialTerminalRef.current = true
       addTerminal()
     }
 
-    if (session.state === 'disconnected') {
+    if (gateway.state === 'disconnected') {
       createdInitialTerminalRef.current = false
       xtermRegistry.closeAll()
       setTerminalUi(emptyTerminalUiState)
     }
-  }, [addTerminal, session.state, xtermRegistry])
+  }, [addTerminal, gateway.state, xtermRegistry])
 
   useEffect(() => () => xtermRegistry.closeAll(), [xtermRegistry])
 
   const contextValue = useMemo(
     () => ({
-      state: session.state,
-      error: session.error,
-      maxTerminals: session.maxTerminals,
+      state: gateway.state,
+      error: gateway.error,
+      maxTerminals: gateway.maxTerminals,
       tabs: terminalUi.tabs,
       activeTerminalId: terminalUi.activeTerminalId,
-      connect: session.connect,
+      connect: gateway.connect,
       disconnect,
       addTerminal,
       closeTerminal,
@@ -167,10 +167,10 @@ const TerminalProvider = ({ children }: PropsWithChildren) => {
       detachTerminal,
     }),
     [
-      session.state,
-      session.error,
-      session.maxTerminals,
-      session.connect,
+      gateway.state,
+      gateway.error,
+      gateway.maxTerminals,
+      gateway.connect,
       terminalUi,
       disconnect,
       addTerminal,
