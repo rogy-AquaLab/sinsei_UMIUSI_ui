@@ -3,18 +3,19 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "bun@1.3.13",
   "workspaces": [
     "terminal-gateway",
     "shared/*"
   ],
   "scripts": {
-    "build:protocol": "npm run build --workspace @sinsei-umiusi/terminal-protocol",
-    "dev": "npm run build:protocol && vite",
-    "dev:terminal": "npm run build:protocol && npm run dev --workspace sinsei-umiusi-terminal-gateway",
-    "build": "npm run build:protocol && tsc -b && vite build",
-    "build:terminal": "npm run build:protocol && npm run build --workspace sinsei-umiusi-terminal-gateway",
-    "check:terminal": "npm run build:protocol && npm run check --workspace sinsei-umiusi-terminal-gateway",
-    "hash-terminal-password": "npm run build:protocol && npm run hash-password --workspace sinsei-umiusi-terminal-gateway",
+    "dev": "vite",
+    "dev:terminal": "bun run --cwd terminal-gateway dev",
+    "build": "tsc -b && vite build",
+    "build:terminal": "bun run --cwd terminal-gateway build",
+    "check:protocol": "bun run --cwd shared/terminal-protocol check",
+    "check:terminal": "bun run --cwd terminal-gateway check",
+    "hash-terminal-password": "bun run --cwd terminal-gateway hash-password",
     "lint": "biome lint . --write",
     "check:lint": "biome lint .",
     "format": "biome check . --write --formatter-enabled=true --linter-enabled=false",
@@ -22,7 +23,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@sinsei-umiusi/terminal-protocol": "*",
+    "@sinsei-umiusi/terminal-protocol": "workspace:*",
     "@tailwindcss/vite": "^4.1.17",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",

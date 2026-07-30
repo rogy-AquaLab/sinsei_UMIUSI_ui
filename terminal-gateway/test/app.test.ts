@@ -1,16 +1,13 @@
-import assert from 'node:assert/strict'
-import type { IncomingMessage, ServerResponse } from 'node:http'
-import { describe, it } from 'node:test'
-import type { HttpBindings } from '@hono/node-server'
-import { createGatewayApp } from '../src/app.js'
+import { describe, expect, it } from 'bun:test'
+import { createGatewayApp } from '../src/app'
 
-const bindings = (remoteAddress = '127.0.0.1'): HttpBindings =>
-  ({
-    incoming: {
-      socket: { remoteAddress },
-    } as IncomingMessage,
-    outgoing: {} as ServerResponse,
-  }) satisfies HttpBindings
+const bindings = (remoteAddress = '127.0.0.1') => ({
+  requestIP: () => ({
+    address: remoteAddress,
+    family: 'IPv4',
+    port: 12345,
+  }),
+})
 
 const setup = ({
   passwordIsValid = true,
@@ -67,14 +64,13 @@ describe('terminal gateway app', () => {
       JSON.stringify({ password: 'correct-password' }),
     )
 
-    assert.equal(response.status, 204)
-    assert.deepEqual(issuedFor, ['127.0.0.1'])
-    assert.match(
-      response.headers.get('set-cookie') ?? '',
+    expect(response.status).toBe(204)
+    expect(issuedFor).toEqual(['127.0.0.1'])
+    expect(response.headers.get('set-cookie') ?? '').toMatch(
       /^terminal-ticket=issued-ticket;/,
     )
-    assert.equal(response.headers.get('cache-control'), 'no-store')
-    assert.equal(response.headers.get('x-content-type-options'), 'nosniff')
+    expect(response.headers.get('cache-control')).toBe('no-store')
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff')
   })
 
   it('rejects an incorrect password', async () => {
@@ -86,11 +82,11 @@ describe('terminal gateway app', () => {
       JSON.stringify({ password: 'wrong-password' }),
     )
 
-    assert.equal(response.status, 401)
-    assert.deepEqual(await response.json(), {
+    expect(response.status).toBe(401)
+    expect(await response.json()).toEqual({
       message: 'Incorrect terminal password.',
     })
-    assert.deepEqual(issuedFor, [])
+    expect(issuedFor).toEqual([])
   })
 
   it('blocks a client after five authentication failures', async () => {
@@ -100,13 +96,13 @@ describe('terminal gateway app', () => {
       const response = await requestTicket(
         JSON.stringify({ password: 'wrong-password' }),
       )
-      assert.equal(response.status, 401)
+      expect(response.status).toBe(401)
     }
 
     const blockedResponse = await requestTicket(
       JSON.stringify({ password: 'wrong-password' }),
     )
-    assert.equal(blockedResponse.status, 429)
+    expect(blockedResponse.status).toBe(429)
   })
 
   it('returns the common JSON error shape for malformed JSON', async () => {
@@ -114,9 +110,9 @@ describe('terminal gateway app', () => {
 
     const response = await requestTicket('{')
 
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), { message: 'Invalid request.' })
-    assert.equal(response.headers.get('cache-control'), 'no-store')
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({ message: 'Invalid request.' })
+    expect(response.headers.get('cache-control')).toBe('no-store')
   })
 
   it('rejects oversized request bodies with the common JSON error shape', async () => {
@@ -126,8 +122,8 @@ describe('terminal gateway app', () => {
       JSON.stringify({ password: 'a'.repeat(4_096) }),
     )
 
-    assert.equal(response.status, 400)
-    assert.deepEqual(await response.json(), { message: 'Invalid request.' })
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({ message: 'Invalid request.' })
   })
 
   it('ignores forwarded addresses', async () => {
@@ -135,7 +131,7 @@ describe('terminal gateway app', () => {
     await gateway.requestTicket(JSON.stringify({ password: 'correct' }), {
       'x-forwarded-for': '203.0.113.10',
     })
-    assert.deepEqual(gateway.issuedFor, ['127.0.0.1'])
+    expect(gateway.issuedFor).toEqual(['127.0.0.1'])
   })
 
   it('rejects requests from other origins', async () => {
@@ -146,8 +142,8 @@ describe('terminal gateway app', () => {
       { origin: 'https://example.com' },
     )
 
-    assert.equal(response.status, 403)
-    assert.deepEqual(await response.json(), {
+    expect(response.status).toBe(403)
+    expect(await response.json()).toEqual({
       message: 'Origin is not allowed.',
     })
   })

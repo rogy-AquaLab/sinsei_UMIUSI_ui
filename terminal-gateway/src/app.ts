@@ -1,27 +1,34 @@
-import { type HttpBindings, upgradeWebSocket } from '@hono/node-server'
 import {
   parseTerminalClientMessage,
   terminalTicketRequestSchema,
 } from '@sinsei-umiusi/terminal-protocol'
 import { type Context, Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
+import { getConnInfo, upgradeWebSocket } from 'hono/bun'
 import { getCookie, setCookie } from 'hono/cookie'
 import { createMiddleware } from 'hono/factory'
 import { HTTPException } from 'hono/http-exception'
 import { validator } from 'hono/validator'
 import { RateLimiterMemory } from 'rate-limiter-flexible'
-import type { WebSocket } from 'ws'
-import type { config as gatewayConfig } from './config.js'
-import type { TerminalManager } from './terminalManager.js'
-import type { TicketStore } from './tickets.js'
+import type { config as gatewayConfig } from './config'
+import type { TerminalManager, TerminalSocket } from './terminalManager'
+import type { TicketStore } from './tickets'
 
 type GatewayConfig = Pick<
   typeof gatewayConfig,
   'allowedOrigins' | 'secureCookie' | 'ticketTtlMs' | 'maxTerminals'
 >
 
+type GatewayBindings = {
+  requestIP(request: Request): {
+    address: string
+    family: string
+    port: number
+  } | null
+}
+
 type GatewayEnvironment = {
-  Bindings: HttpBindings
+  Bindings: GatewayBindings
   Variables: {
     clientToken: symbol
   }
@@ -36,7 +43,7 @@ export type GatewayDependencies = {
   ticketCookieName: string
   tickets: Pick<TicketStore, 'consume' | 'issue'>
   verifyPassword: (password: string) => Promise<boolean>
-  createTerminalManager: (socket: WebSocket) => TerminalManagerHandle
+  createTerminalManager: (socket: TerminalSocket) => TerminalManagerHandle
 }
 
 const jsonError = (
@@ -57,7 +64,7 @@ export const createGatewayApp = ({
   let activeClientToken: symbol | null = null
 
   const getClientAddress = (context: Context<GatewayEnvironment>) => {
-    return context.env.incoming.socket.remoteAddress ?? 'unknown'
+    return getConnInfo(context).remote.address ?? 'unknown'
   }
 
   const releaseClient = (token: symbol) => {
@@ -107,9 +114,6 @@ export const createGatewayApp = ({
       activeClientToken = token
 
       context.set('clientToken', token)
-      context.env.incoming.socket.once('close', () => {
-        releaseClient(token)
-      })
 
       try {
         await next()
@@ -127,7 +131,13 @@ export const createGatewayApp = ({
       : jsonError(context, 400, 'Password is required.')
   })
 
-  app.use('/api/terminal/*', async (context, next) => {
+  app.use('/api/terminal/tickets', async (context, next) => {
+    context.header('Cache-Control', 'no-store')
+    context.header('X-Content-Type-Options', 'nosniff')
+    await next()
+  })
+
+  app.use('/api/terminal/health', async (context, next) => {
     context.header('Cache-Control', 'no-store')
     context.header('X-Content-Type-Options', 'nosniff')
     await next()
@@ -195,7 +205,7 @@ export const createGatewayApp = ({
 
       return {
         onOpen(_event, socket) {
-          const rawSocket = socket.raw as WebSocket | undefined
+          const rawSocket = socket.raw as TerminalSocket | undefined
           if (!rawSocket) {
             closeConnection()
             socket.close(1011, 'Could not initialize the terminal connection')
@@ -231,11 +241,6 @@ export const createGatewayApp = ({
         },
         onClose() {
           closeConnection()
-        },
-        onError(event, socket) {
-          console.error('Terminal WebSocket error', event)
-          closeConnection()
-          socket.close(1011, 'Terminal connection failed')
         },
       }
     }),

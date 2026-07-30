@@ -1,6 +1,6 @@
 import { stdin, stdout } from 'node:process'
 import { createInterface } from 'node:readline/promises'
-import { hashPassword } from './password.js'
+import { hashPassword } from './password'
 
 const readline = createInterface({ input: stdin, output: stdout })
 

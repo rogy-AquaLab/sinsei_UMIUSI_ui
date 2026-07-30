@@ -1,14 +1,13 @@
-import { serve } from '@hono/node-server'
-import { WebSocketServer } from 'ws'
-import { createGatewayApp } from './app.js'
-import { config, ticketCookieName } from './config.js'
-import { verifyPasswordHash } from './password.js'
-import { TerminalManager } from './terminalManager.js'
-import { TicketStore } from './tickets.js'
+import { websocket } from 'hono/bun'
+import { createGatewayApp } from './app'
+import { config, ticketCookieName } from './config'
+import { verifyPasswordHash } from './password'
+import { TerminalManager } from './terminalManager'
+import { TicketStore } from './tickets'
 
 const verifyPassword = async (password: string) => {
   if (config.passwordHash) {
-    return await verifyPasswordHash(password, config.passwordHash)
+    return verifyPasswordHash(password, config.passwordHash)
   }
   return password === config.password
 }
@@ -21,42 +20,36 @@ const app = createGatewayApp({
   createTerminalManager: (socket) => new TerminalManager(socket),
 })
 
-const webSocketServer = new WebSocketServer({
-  noServer: true,
-  maxPayload: config.maxPayloadBytes,
-  perMessageDeflate: false,
+const server = Bun.serve({
+  hostname: config.host,
+  port: config.port,
+  fetch: (request, bunServer) => app.fetch(request, bunServer),
+  websocket: {
+    ...websocket,
+    maxPayloadLength: config.maxPayloadBytes,
+    backpressureLimit: config.maxBufferedBytes,
+    closeOnBackpressureLimit: true,
+    perMessageDeflate: false,
+    idleTimeout: 0,
+  },
 })
 
-const server = serve(
-  {
-    fetch: app.fetch,
-    hostname: config.host,
-    port: config.port,
-    websocket: { server: webSocketServer },
-  },
-  () => {
-    console.log(
-      `Terminal gateway listening on http://${config.host}:${config.port}`,
-    )
-    console.log(`Allowed origins: ${[...config.allowedOrigins].join(', ')}`)
-    if (config.password) {
-      console.warn(
-        'Using plaintext TERMINAL_PASSWORD for local development. Do not use it in production.',
-      )
-    }
-  },
-)
+console.log(`Terminal gateway listening on ${server.url}`)
+console.log(`Allowed origins: ${[...config.allowedOrigins].join(', ')}`)
+if (config.password) {
+  console.warn(
+    'Using plaintext TERMINAL_PASSWORD for local development. Do not use it in production.',
+  )
+}
 
 let shuttingDown = false
 
-const shutdown = () => {
+const shutdown = async () => {
   if (shuttingDown) return
   shuttingDown = true
 
-  for (const client of webSocketServer.clients) {
-    client.close(1001, 'Gateway shutting down')
-  }
-  server.close(() => process.exit(0))
+  await server.stop(true)
+  process.exit(0)
 }
 
 process.on('SIGINT', shutdown)

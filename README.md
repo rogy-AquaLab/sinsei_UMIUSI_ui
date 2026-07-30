@@ -10,22 +10,23 @@ Each tab owns a separate PTY process.
 
 ### Local development
 
-Install the workspace dependencies:
+Install [Bun](https://bun.com/docs/installation), then install the workspace
+dependencies:
 
 ```sh
-npm install
+bun install
 ```
 
 Run the gateway with a development-only plaintext password:
 
 ```sh
-TERMINAL_PASSWORD=development-password npm run dev:terminal
+TERMINAL_PASSWORD=development-password bun run dev:terminal
 ```
 
 In another terminal, start Vite:
 
 ```sh
-npm run dev
+bun run dev
 ```
 
 Vite proxies `/api/terminal/*` and the terminal WebSocket to the gateway on
@@ -37,7 +38,7 @@ development password.
 For production, generate a password hash:
 
 ```sh
-npm run hash-terminal-password
+bun run hash-terminal-password
 ```
 
 Pass the output through `TERMINAL_PASSWORD_HASH`. The gateway intentionally
@@ -55,6 +56,7 @@ rejects plaintext `TERMINAL_PASSWORD` when `NODE_ENV=production`.
 | `TERMINAL_SHELL` | `$SHELL`, then OS default | Shell executable |
 | `TERMINAL_CWD` | current user's home | Initial shell working directory |
 
-The gateway uses macOS's configured shell during local development and works
-with a Linux shell on Raspberry Pi. HTTPS/WSS termination, systemd, and nginx
-configuration are intentionally outside the current implementation.
+The gateway runs on Bun and uses `Bun.Terminal` to provide PTYs. It uses macOS's
+configured shell during local development and works with a Linux shell on the
+64-bit Raspberry Pi. HTTPS/WSS termination, systemd, and nginx configuration are
+intentionally outside the current implementation.
