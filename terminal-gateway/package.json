@@ -15,9 +15,11 @@
     "hash-password": "tsx src/hashPassword.ts"
   },
   "dependencies": {
+    "@hono/node-server": "^2.0.12",
     "@sinsei-umiusi/terminal-protocol": "*",
-    "cookie": "^1.0.2",
+    "hono": "^4.12.32",
     "node-pty": "^1.1.0",
+    "rate-limiter-flexible": "^11.2.0",
     "ws": "^8.21.1"
   },
   "devDependencies": {

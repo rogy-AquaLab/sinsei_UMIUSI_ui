@@ -1,62 +1,63 @@
+import { type HttpBindings, serve, upgradeWebSocket } from '@hono/node-server'
 import {
-  createServer,
-  type IncomingMessage,
-  type ServerResponse,
-} from 'node:http'
-import { parseTerminalClientMessage } from '@sinsei-umiusi/terminal-protocol'
-import { parse as parseCookie, serialize as serializeCookie } from 'cookie'
+  parseTerminalClientMessage,
+  terminalTicketRequestSchema,
+} from '@sinsei-umiusi/terminal-protocol'
+import { type Context, Hono } from 'hono'
+import { bodyLimit } from 'hono/body-limit'
+import { getCookie, setCookie } from 'hono/cookie'
+import { createMiddleware } from 'hono/factory'
+import { validator } from 'hono/validator'
+import { RateLimiterMemory } from 'rate-limiter-flexible'
+import type { WebSocket } from 'ws'
 import { WebSocketServer } from 'ws'
 import { config, ticketCookieName } from './config.js'
 import { verifyPasswordHash } from './password.js'
-import { AuthenticationRateLimiter } from './rateLimiter.js'
 import { TerminalManager } from './terminalManager.js'
 import { TicketStore } from './tickets.js'
 
+type GatewayEnvironment = {
+  Bindings: HttpBindings
+}
+
+type ErrorStatus = 400 | 401 | 403 | 404 | 409 | 429 | 500
+
 const tickets = new TicketStore(config.ticketTtlMs)
-const rateLimiter = new AuthenticationRateLimiter()
+const rateLimiter = new RateLimiterMemory({ points: 5, duration: 60 })
 let activeClient = false
 
-const getClientAddress = (request: IncomingMessage) => {
-  const forwarded = request.headers['x-forwarded-for']
-  if (typeof forwarded === 'string') {
+const isAuthenticationBlocked = async (clientAddress: string) =>
+  ((await rateLimiter.get(clientAddress))?.remainingPoints ?? 1) <= 0
+
+const recordAuthenticationFailure = async (clientAddress: string) => {
+  try {
+    const state = await rateLimiter.consume(clientAddress)
+    if (state.remainingPoints === 0) {
+      await rateLimiter.block(clientAddress, 5 * 60)
+    }
+  } catch {
+    await rateLimiter.block(clientAddress, 5 * 60)
+  }
+}
+
+const getClientAddress = (context: Context<GatewayEnvironment>) => {
+  const forwarded = context.req.header('x-forwarded-for')
+  if (forwarded) {
     return forwarded.split(',')[0]?.trim() || 'unknown'
   }
-  return request.socket.remoteAddress ?? 'unknown'
+  return context.env.incoming.socket.remoteAddress ?? 'unknown'
 }
 
-const hasAllowedOrigin = (request: IncomingMessage) => {
-  const origin = request.headers.origin
-  return typeof origin === 'string' && config.allowedOrigins.has(origin)
+const hasAllowedOrigin = (context: Context<GatewayEnvironment>) => {
+  const origin = context.req.header('origin')
+  return Boolean(origin && config.allowedOrigins.has(origin))
 }
 
-const sendJson = (
-  response: ServerResponse,
-  status: number,
-  body: Record<string, unknown>,
-  headers: Record<string, string> = {},
-) => {
-  response.writeHead(status, {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-store',
-    'X-Content-Type-Options': 'nosniff',
-    ...headers,
-  })
-  response.end(JSON.stringify(body))
-}
-
-const readJsonBody = async (request: IncomingMessage) => {
-  const chunks: Buffer[] = []
-  let length = 0
-
-  for await (const chunk of request) {
-    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
-    length += buffer.length
-    if (length > 4096) throw new Error('request_too_large')
-    chunks.push(buffer)
-  }
-
-  return JSON.parse(Buffer.concat(chunks).toString('utf8')) as unknown
-}
+const jsonError = (
+  context: Context<GatewayEnvironment>,
+  status: ErrorStatus,
+  message: string,
+) => context.json({ message }, status)
 
 const verifyPassword = async (password: string) => {
   if (config.passwordHash) {
@@ -65,89 +66,150 @@ const verifyPassword = async (password: string) => {
   return password === config.password
 }
 
-const handleTicketRequest = async (
-  request: IncomingMessage,
-  response: ServerResponse,
-) => {
-  if (!hasAllowedOrigin(request)) {
-    sendJson(response, 403, { message: 'Origin is not allowed.' })
-    return
-  }
+const claimClient = createMiddleware<GatewayEnvironment>(
+  async (context, next) => {
+    if (context.req.header('upgrade')?.toLowerCase() !== 'websocket') {
+      return jsonError(context, 404, 'Not found.')
+    }
+    if (!hasAllowedOrigin(context)) {
+      return jsonError(context, 403, 'Origin is not allowed.')
+    }
+    if (activeClient) {
+      return jsonError(context, 409, 'Another browser is using the terminal.')
+    }
 
-  const clientAddress = getClientAddress(request)
-  if (activeClient) {
-    sendJson(response, 409, {
-      message: 'Another browser is using the terminal.',
+    const ticket = getCookie(context, ticketCookieName)
+    const clientAddress = getClientAddress(context)
+    if (!ticket || !tickets.consume(ticket, clientAddress)) {
+      return jsonError(context, 401, 'Terminal authorization is required.')
+    }
+
+    activeClient = true
+    context.env.incoming.socket.once('close', () => {
+      activeClient = false
     })
-    return
-  }
-  if (rateLimiter.isBlocked(clientAddress)) {
-    sendJson(response, 429, { message: 'Too many attempts. Try again later.' })
-    return
-  }
+    await next()
+  },
+)
 
-  let body: unknown
-  try {
-    body = await readJsonBody(request)
-  } catch {
-    sendJson(response, 400, { message: 'Invalid request.' })
-    return
-  }
+const app = new Hono<GatewayEnvironment>()
 
-  const password =
-    typeof body === 'object' &&
-    body !== null &&
-    'password' in body &&
-    typeof body.password === 'string'
-      ? body.password
-      : null
-
-  if (!password || password.length > 1024) {
-    sendJson(response, 400, { message: 'Password is required.' })
-    return
-  }
-
-  if (!(await verifyPassword(password))) {
-    rateLimiter.recordFailure(clientAddress)
-    sendJson(response, 401, { message: 'Incorrect terminal password.' })
-    return
-  }
-
-  rateLimiter.clear(clientAddress)
-  const ticket = tickets.issue(clientAddress)
-  const cookie = serializeCookie(ticketCookieName, ticket, {
-    httpOnly: true,
-    secure: config.secureCookie,
-    sameSite: 'strict',
-    path: '/',
-    maxAge: Math.ceil(config.ticketTtlMs / 1000),
-  })
-  response.writeHead(204, {
-    'Set-Cookie': cookie,
-    'Cache-Control': 'no-store',
-  })
-  response.end()
-}
-
-const server = createServer(async (request, response) => {
-  const url = new URL(request.url ?? '/', 'http://terminal-gateway.local')
-
-  if (request.method === 'POST' && url.pathname === '/api/terminal/tickets') {
-    await handleTicketRequest(request, response)
-    return
-  }
-
-  if (request.method === 'GET' && url.pathname === '/api/terminal/health') {
-    sendJson(response, 200, {
-      status: 'ok',
-      activeClient,
-      maxTerminals: config.maxTerminals,
-    })
-    return
-  }
-
-  sendJson(response, 404, { message: 'Not found.' })
+const validateTicketRequest = validator('json', (value, context) => {
+  const result = terminalTicketRequestSchema.safeParse(value)
+  return result.success
+    ? result.data
+    : jsonError(context, 400, 'Password is required.')
 })
+
+app.use('/api/terminal/*', async (context, next) => {
+  context.header('Cache-Control', 'no-store')
+  context.header('X-Content-Type-Options', 'nosniff')
+  await next()
+})
+
+app.post(
+  '/api/terminal/tickets',
+  bodyLimit({
+    maxSize: 4096,
+    onError: (context) => jsonError(context, 400, 'Invalid request.'),
+  }),
+  validateTicketRequest,
+  async (context) => {
+    if (!hasAllowedOrigin(context)) {
+      return jsonError(context, 403, 'Origin is not allowed.')
+    }
+
+    const clientAddress = getClientAddress(context)
+    if (activeClient) {
+      return jsonError(context, 409, 'Another browser is using the terminal.')
+    }
+    if (await isAuthenticationBlocked(clientAddress)) {
+      return jsonError(context, 429, 'Too many attempts. Try again later.')
+    }
+
+    const { password } = context.req.valid('json')
+
+    if (!(await verifyPassword(password))) {
+      await recordAuthenticationFailure(clientAddress)
+      return jsonError(context, 401, 'Incorrect terminal password.')
+    }
+
+    await rateLimiter.delete(clientAddress)
+    const ticket = tickets.issue(clientAddress)
+    setCookie(context, ticketCookieName, ticket, {
+      httpOnly: true,
+      secure: config.secureCookie,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: Math.ceil(config.ticketTtlMs / 1000),
+    })
+    context.header('Cache-Control', 'no-store')
+    return context.body(null, 204)
+  },
+)
+
+app.get('/api/terminal/health', (context) => {
+  return context.json({
+    status: 'ok',
+    activeClient,
+    maxTerminals: config.maxTerminals,
+  })
+})
+
+app.get(
+  '/api/terminal/ws',
+  claimClient,
+  upgradeWebSocket(() => {
+    let manager: TerminalManager | null = null
+
+    return {
+      onOpen(_event, socket) {
+        const rawSocket = socket.raw as WebSocket | undefined
+        if (!rawSocket) {
+          socket.close(1011, 'Could not initialize the terminal connection')
+          return
+        }
+
+        manager = new TerminalManager(rawSocket)
+        socket.send(
+          JSON.stringify({
+            type: 'connection.ready',
+            maxTerminals: config.maxTerminals,
+          }),
+        )
+      },
+      onMessage(event, socket) {
+        if (typeof event.data !== 'string') {
+          socket.close(1003, 'Binary messages are not supported')
+          return
+        }
+
+        const message = parseTerminalClientMessage(event.data)
+        if (!message) {
+          socket.send(
+            JSON.stringify({
+              type: 'error',
+              code: 'invalid_message',
+              message: 'Invalid terminal message.',
+            }),
+          )
+          return
+        }
+        manager?.handle(message)
+      },
+      onClose() {
+        manager?.closeAll()
+      },
+      onError(event, socket) {
+        console.error('Terminal WebSocket error', event)
+        manager?.closeAll()
+        socket.close(1011, 'Terminal connection failed')
+      },
+    }
+  }),
+)
+
+app.notFound((context) => jsonError(context, 404, 'Not found.'))
 
 const webSocketServer = new WebSocketServer({
   noServer: true,
@@ -155,104 +217,25 @@ const webSocketServer = new WebSocketServer({
   perMessageDeflate: false,
 })
 
-server.on('upgrade', (request, socket, head) => {
-  const url = new URL(request.url ?? '/', 'http://terminal-gateway.local')
-  if (url.pathname !== '/api/terminal/ws') {
-    socket.write('HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n')
-    socket.destroy()
-    return
-  }
-  if (!hasAllowedOrigin(request)) {
-    socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n')
-    socket.destroy()
-    return
-  }
-  if (activeClient) {
-    socket.write('HTTP/1.1 409 Conflict\r\nConnection: close\r\n\r\n')
-    socket.destroy()
-    return
-  }
-
-  const cookies = parseCookie(request.headers.cookie ?? '')
-  const ticket = cookies[ticketCookieName]
-  const clientAddress = getClientAddress(request)
-  if (!ticket || !tickets.consume(ticket, clientAddress)) {
-    socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n')
-    socket.destroy()
-    return
-  }
-
-  activeClient = true
-  try {
-    webSocketServer.handleUpgrade(request, socket, head, (webSocket) => {
-      webSocketServer.emit('connection', webSocket, request)
-    })
-  } catch (error) {
-    activeClient = false
-    socket.destroy()
-    console.error('WebSocket upgrade failed', error)
-  }
-})
-
-webSocketServer.on('connection', (socket) => {
-  const manager = new TerminalManager(socket)
-  let released = false
-
-  const releaseClient = () => {
-    if (released) return
-    released = true
-    manager.closeAll()
-    activeClient = false
-  }
-
-  socket.send(
-    JSON.stringify({
-      type: 'connection.ready',
-      maxTerminals: config.maxTerminals,
-    }),
-  )
-
-  socket.on('message', (data, isBinary) => {
-    if (isBinary) {
-      socket.close(1003, 'Binary messages are not supported')
-      return
-    }
-
-    const message = parseTerminalClientMessage(data.toString('utf8'))
-    if (!message) {
-      socket.send(
-        JSON.stringify({
-          type: 'error',
-          code: 'invalid_message',
-          message: 'Invalid terminal message.',
-        }),
-      )
-      return
-    }
-    manager.handle(message)
-  })
-
-  socket.on('close', () => {
-    releaseClient()
-  })
-
-  socket.on('error', (error) => {
-    console.error('Terminal WebSocket error', error)
-    releaseClient()
-  })
-})
-
-server.listen(config.port, config.host, () => {
-  console.log(
-    `Terminal gateway listening on http://${config.host}:${config.port}`,
-  )
-  console.log(`Allowed origins: ${[...config.allowedOrigins].join(', ')}`)
-  if (config.password) {
-    console.warn(
-      'Using plaintext TERMINAL_PASSWORD for local development. Do not use it in production.',
+const server = serve(
+  {
+    fetch: app.fetch,
+    hostname: config.host,
+    port: config.port,
+    websocket: { server: webSocketServer },
+  },
+  () => {
+    console.log(
+      `Terminal gateway listening on http://${config.host}:${config.port}`,
     )
-  }
-})
+    console.log(`Allowed origins: ${[...config.allowedOrigins].join(', ')}`)
+    if (config.password) {
+      console.warn(
+        'Using plaintext TERMINAL_PASSWORD for local development. Do not use it in production.',
+      )
+    }
+  },
+)
 
 const shutdown = () => {
   for (const client of webSocketServer.clients) {

@@ -4,6 +4,10 @@ const terminalIdSchema = z.uuidv4()
 const columnsSchema = z.int().check(z.minimum(1), z.maximum(300))
 const rowsSchema = z.int().check(z.minimum(1), z.maximum(200))
 
+export const terminalTicketRequestSchema = z.object({
+  password: z.string().check(z.minLength(1), z.maxLength(1024)),
+})
+
 export const terminalClientMessageSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('terminal.create'),
