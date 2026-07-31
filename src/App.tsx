@@ -4,11 +4,13 @@ import Drawer from '@/components/Drawer'
 import LogsView from '@/components/LogsView'
 import Navbar from '@/components/Navbar'
 import { useGamepadPublisher } from '@/hooks/useGamepadPublisher'
-import { useRos } from '@/hooks/useRos'
+import { useStoreLifecycle } from '@/hooks/useStoreLifecycle'
+import { useRosStore } from '@/stores/rosStore'
 import type { MainContentTab } from '@/types/navigation'
 
 function App() {
-  const { ros } = useRos()
+  useStoreLifecycle()
+  const ros = useRosStore((state) => state.ros)
   const [activeTab, setActiveTab] = useState<MainContentTab>('camera')
 
   useGamepadPublisher({ ros })

@@ -1,7 +1,7 @@
-import { useRos } from '@/hooks/useRos'
+import { useRosStore } from '@/stores/rosStore'
 
 const RosStatusBadge = () => {
-  const { connectionState } = useRos()
+  const connectionState = useRosStore((state) => state.connectionState)
 
   const isLoading =
     connectionState === 'connecting' ||

@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import { type Ros, Topic } from 'roslib'
-import { useGamepad } from '@/hooks/useGamepad'
 import { useLoop } from '@/hooks/useLoop'
 import type * as Msgs from '@/msgs/OriginalMsgs'
+import { getLatestGamepadByIndex, useGamepadStore } from '@/stores/gamepadStore'
 import { mapGamepad } from '@/utils/gamepadMapping'
 
 type GamepadPublisherOptions = {
@@ -17,7 +17,7 @@ export const useGamepadPublisher = ({
   ros,
   frequency = 30,
 }: GamepadPublisherOptions) => {
-  const { selectedIndex, getLatestGamepadByIndex } = useGamepad()
+  const selectedIndex = useGamepadStore((state) => state.selectedIndex)
 
   const targetTopic = useMemo(() => {
     if (!ros) return null
@@ -56,7 +56,7 @@ export const useGamepadPublisher = ({
 
       targetTopic?.publish(message)
     }
-  }, [selectedIndex, getLatestGamepadByIndex, targetTopic])
+  }, [selectedIndex, targetTopic])
 
   // rosオブジェクトが存在するときだけループを回す
   useLoop({ callback: loop, frequency: ros ? frequency : null })

@@ -1,8 +1,4 @@
 import { useMemo, useState } from 'react'
-import type { RosoutLog } from '@/contexts/RosoutContext'
-import type { Toast } from '@/contexts/ToastContext'
-import { useRosout } from '@/hooks/useRosout'
-import { useToast } from '@/hooks/useToast'
 import {
   RCL_LOG_LEVEL_DEBUG,
   RCL_LOG_LEVEL_ERROR,
@@ -10,6 +6,8 @@ import {
   RCL_LOG_LEVEL_INFO,
   RCL_LOG_LEVEL_WARN,
 } from '@/msgs/RclInterfacesMsgs'
+import { type RosoutLog, useRosoutStore } from '@/stores/rosoutStore'
+import { type Toast, useToastStore } from '@/stores/toastStore'
 
 type RosoutLevelFilter = RosoutLog['level']
 const DEFAULT_ROSOUT_LEVEL = RCL_LOG_LEVEL_DEBUG
@@ -22,8 +20,8 @@ const severityStyles = {
 } as const
 
 const LogsView = () => {
-  const { history } = useToast()
-  const { logs: rosoutLogs } = useRosout()
+  const history = useToastStore((state) => state.history)
+  const rosoutLogs = useRosoutStore((state) => state.logs)
   const [activeTab, setActiveTab] = useState<'notifications' | 'rosout'>(
     'notifications',
   )

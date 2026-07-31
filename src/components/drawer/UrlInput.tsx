@@ -1,7 +1,9 @@
-import { useRos } from '@/hooks/useRos'
+import { useRosStore } from '@/stores/rosStore'
 
 const UrlInput = () => {
-  const { connectionState, url, setUrl } = useRos()
+  const connectionState = useRosStore((state) => state.connectionState)
+  const url = useRosStore((state) => state.url)
+  const setUrl = useRosStore((state) => state.setUrl)
 
   return (
     <input
