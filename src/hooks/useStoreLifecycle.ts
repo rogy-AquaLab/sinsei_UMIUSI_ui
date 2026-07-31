@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { initializeGamepadStore } from '@/stores/gamepadStore'
+import { disposeNotificationStore } from '@/stores/notificationStore'
 import { initializeRobotStateStore } from '@/stores/robotStateStore'
 import { initializeRosoutStore } from '@/stores/rosoutStore'
 import { disposeRosStore } from '@/stores/rosStore'
-import { disposeToastStore } from '@/stores/toastStore'
 
 export const useStoreLifecycle = () => {
   useEffect(() => {
@@ -16,7 +16,7 @@ export const useStoreLifecycle = () => {
       disposeRobotState()
       disposeGamepads()
       disposeRosStore()
-      disposeToastStore()
+      disposeNotificationStore()
     }
   }, [])
 }

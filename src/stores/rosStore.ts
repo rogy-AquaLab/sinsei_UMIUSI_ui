@@ -1,6 +1,6 @@
 import { Ros } from 'roslib'
 import { create } from 'zustand'
-import { useToastStore } from '@/stores/toastStore'
+import { useNotificationStore } from '@/stores/notificationStore'
 
 export type RosConnectionState =
   | 'disconnected'
@@ -71,7 +71,9 @@ export const useRosStore = create<RosStore>((set, get) => ({
 
       set({ connectionState: 'connected' })
       console.log('Connected to rosbridge server.')
-      useToastStore.getState().show('Connected to rosbridge server.', 'success')
+      useNotificationStore
+        .getState()
+        .notify('Connected to rosbridge server.', 'success')
     }
 
     const handleClose = () => {
@@ -84,27 +86,27 @@ export const useRosStore = create<RosStore>((set, get) => ({
       switch (current.connectionState) {
         case 'disconnecting':
           console.log('Disconnected from rosbridge server.')
-          useToastStore
+          useNotificationStore
             .getState()
-            .show('Disconnected from rosbridge server.', 'success')
+            .notify('Disconnected from rosbridge server.', 'success')
           break
         case 'cancel_connecting':
           console.log('Connection attempt to rosbridge server canceled.')
-          useToastStore
+          useNotificationStore
             .getState()
-            .show('Connection attempt to rosbridge server canceled.', 'info')
+            .notify('Connection attempt to rosbridge server canceled.', 'info')
           break
         case 'connecting':
           console.log('Failed to connect to rosbridge server.')
-          useToastStore
+          useNotificationStore
             .getState()
-            .show('Failed to connect to rosbridge server.', 'error')
+            .notify('Failed to connect to rosbridge server.', 'error')
           break
         case 'connected':
           console.log('Connection to rosbridge server lost.')
-          useToastStore
+          useNotificationStore
             .getState()
-            .show('Connection to rosbridge server lost.', 'error')
+            .notify('Connection to rosbridge server lost.', 'error')
           break
         default:
           break
@@ -126,9 +128,9 @@ export const useRosStore = create<RosStore>((set, get) => ({
       }
 
       console.log('Failed to connect to rosbridge server.')
-      useToastStore
+      useNotificationStore
         .getState()
-        .show('Failed to connect to rosbridge server.', 'error')
+        .notify('Failed to connect to rosbridge server.', 'error')
 
       detachHandlers(handlers)
       set({ ros: null, connectionState: 'disconnected' })

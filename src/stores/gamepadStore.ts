@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { useToastStore } from '@/stores/toastStore'
+import { useNotificationStore } from '@/stores/notificationStore'
 
 // ref: https://github.com/nogiszd/react-ts-gamepads/blob/main/src/GamepadContext.tsx
 
@@ -49,7 +49,9 @@ const registerGamepad = (gamepad: Gamepad, notify: boolean) => {
   })
 
   if (notify) {
-    useToastStore.getState().show(`Gamepad connected: ${gamepad.id}`, 'info')
+    useNotificationStore
+      .getState()
+      .notify(`Gamepad connected: ${gamepad.id}`, 'info')
   }
 }
 
@@ -72,9 +74,9 @@ const unregisterGamepad = (index: Gamepad['index'], notify: boolean) => {
   })
 
   if (notify) {
-    useToastStore
+    useNotificationStore
       .getState()
-      .show(`Gamepad disconnected: ${disconnected.id}`, 'info')
+      .notify(`Gamepad disconnected: ${disconnected.id}`, 'info')
   }
 }
 

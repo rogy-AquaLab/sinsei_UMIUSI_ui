@@ -6,8 +6,11 @@ import {
   RCL_LOG_LEVEL_INFO,
   RCL_LOG_LEVEL_WARN,
 } from '@/msgs/RclInterfacesMsgs'
+import {
+  type Notification,
+  useNotificationStore,
+} from '@/stores/notificationStore'
 import { type RosoutLog, useRosoutStore } from '@/stores/rosoutStore'
-import { type Toast, useToastStore } from '@/stores/toastStore'
 
 type RosoutLevelFilter = RosoutLog['level']
 const DEFAULT_ROSOUT_LEVEL = RCL_LOG_LEVEL_DEBUG
@@ -20,7 +23,7 @@ const severityStyles = {
 } as const
 
 const LogsView = () => {
-  const history = useToastStore((state) => state.history)
+  const history = useNotificationStore((state) => state.history)
   const rosoutLogs = useRosoutStore((state) => state.logs)
   const [activeTab, setActiveTab] = useState<'notifications' | 'rosout'>(
     'notifications',
@@ -124,7 +127,7 @@ const levelOptions: { label: string; value: RosoutLevelFilter }[] = [
   { label: 'Fatal', value: RCL_LOG_LEVEL_FATAL },
 ]
 
-const NotificationsTable = ({ logs }: { logs: Toast[] }) => {
+const NotificationsTable = ({ logs }: { logs: Notification[] }) => {
   if (logs.length === 0) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-base-content/60">
@@ -144,17 +147,19 @@ const NotificationsTable = ({ logs }: { logs: Toast[] }) => {
           </tr>
         </thead>
         <tbody>
-          {logs.map((toast) => {
-            const style = severityStyles[toast.type]
+          {logs.map((notification) => {
+            const style = severityStyles[notification.type]
             return (
-              <tr key={toast.id} className="align-top">
-                <td className="text-base-content/60">{toast.timestamp}</td>
+              <tr key={notification.id} className="align-top">
+                <td className="text-base-content/60">
+                  {notification.timestamp}
+                </td>
                 <td>
                   <span className={`badge ${style.badge} ${style.badgeText}`}>
-                    {toast.type.toUpperCase()}
+                    {notification.type.toUpperCase()}
                   </span>
                 </td>
-                <td className="text-base-content">{toast.message}</td>
+                <td className="text-base-content">{notification.message}</td>
               </tr>
             )
           })}

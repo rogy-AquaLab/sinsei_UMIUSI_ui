@@ -15,8 +15,8 @@ import {
   robotModeToNum,
   robotModeToString,
 } from '@/msgs/utils/RobotMode'
+import { useNotificationStore } from '@/stores/notificationStore'
 import { useRosStore } from '@/stores/rosStore'
-import { useToastStore } from '@/stores/toastStore'
 
 export type MainPowerState =
   | 'unknown'
@@ -78,7 +78,9 @@ const requestSetMode = (requestedMode: RobotMode) => {
     return
   }
   if (!setModeService) {
-    useToastStore.getState().show('Set Mode service is unavailable', 'error')
+    useNotificationStore
+      .getState()
+      .notify('Set Mode service is unavailable', 'error')
     return
   }
 
@@ -91,9 +93,9 @@ const requestSetMode = (requestedMode: RobotMode) => {
       const response = _response as SetModeResponse
       if (response.success) {
         console.log(`Set Mode to ${robotModeToString(requestedMode)} requested`)
-        // useToastStore
+        // useNotificationStore
         //   .getState()
-        //   .show(
+        //   .notify(
         //     `Set Mode to ${robotModeToString(requestedMode)} requested`,
         //     'success',
         //   )
@@ -101,14 +103,16 @@ const requestSetMode = (requestedMode: RobotMode) => {
       }
 
       console.error('Set Mode failed:', response.error_msg)
-      useToastStore
+      useNotificationStore
         .getState()
-        .show(`Set Mode failed: ${response.error_msg}`, 'error')
+        .notify(`Set Mode failed: ${response.error_msg}`, 'error')
       useRobotStateStore.setState({ modeTransitionState: 'idle' })
     },
     (error) => {
       console.error('Set Mode service call failed', error)
-      useToastStore.getState().show('Set Mode service call failed', 'error')
+      useNotificationStore
+        .getState()
+        .notify('Set Mode service call failed', 'error')
       useRobotStateStore.setState({ modeTransitionState: 'idle' })
     },
   )
@@ -129,9 +133,9 @@ export const useRobotStateStore = create<RobotStateStore>((set, get) => ({
 
     const service = on ? powerOnService : powerOffService
     if (!service) {
-      useToastStore
+      useNotificationStore
         .getState()
-        .show(`Power ${on ? 'ON' : 'OFF'} service is unavailable`, 'error')
+        .notify(`Power ${on ? 'ON' : 'OFF'} service is unavailable`, 'error')
       return
     }
 
@@ -142,16 +146,16 @@ export const useRobotStateStore = create<RobotStateStore>((set, get) => ({
         const response = _response as PowerOnResponce | PowerOffResponce
         if (response.success) {
           console.log(`Power ${on ? 'ON' : 'OFF'} requested`)
-          useToastStore
+          useNotificationStore
             .getState()
-            .show(`Power ${on ? 'ON' : 'OFF'} requested`, 'success')
+            .notify(`Power ${on ? 'ON' : 'OFF'} requested`, 'success')
           return
         }
 
         console.error(`Power ${on ? 'ON' : 'OFF'} failed:`, response.error_msg)
-        useToastStore
+        useNotificationStore
           .getState()
-          .show(
+          .notify(
             `Power ${on ? 'ON' : 'OFF'} failed: ${response.error_msg}`,
             'error',
           )
@@ -160,9 +164,9 @@ export const useRobotStateStore = create<RobotStateStore>((set, get) => ({
       },
       () => {
         console.error(`Power ${on ? 'ON' : 'OFF'} service call failed`)
-        useToastStore
+        useNotificationStore
           .getState()
-          .show(`Power ${on ? 'ON' : 'OFF'} service call failed`, 'error')
+          .notify(`Power ${on ? 'ON' : 'OFF'} service call failed`, 'error')
         // 状態を元に戻す
         set({ mainPowerState: on ? 'off' : 'on' })
       },

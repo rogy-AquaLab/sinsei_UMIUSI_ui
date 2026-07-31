@@ -1,9 +1,12 @@
 import type { ReactElement } from 'react'
 import { FaCheck, FaExclamationTriangle, FaInfoCircle } from 'react-icons/fa'
 import { FaXmark } from 'react-icons/fa6'
-import { type ToastType, useToastStore } from '@/stores/toastStore'
+import {
+  type NotificationType,
+  useNotificationStore,
+} from '@/stores/notificationStore'
 
-const icons: Record<ToastType, ReactElement> = {
+const icons: Record<NotificationType, ReactElement> = {
   info: <FaInfoCircle />,
   success: <FaCheck />,
   warning: <FaExclamationTriangle />,
@@ -11,7 +14,7 @@ const icons: Record<ToastType, ReactElement> = {
 }
 
 // Tailwindは動的なクラス名に非対応なのでワークアラウンドとして静的に列挙
-const alertClasses: Record<ToastType, string> = {
+const alertClasses: Record<NotificationType, string> = {
   info: 'alert-info',
   success: 'alert-success',
   warning: 'alert-warning',
@@ -19,8 +22,8 @@ const alertClasses: Record<ToastType, string> = {
 }
 
 const ToastViewport = () => {
-  const toasts = useToastStore((state) => state.toasts)
-  const dismiss = useToastStore((state) => state.dismiss)
+  const toasts = useNotificationStore((state) => state.toasts)
+  const dismissToast = useNotificationStore((state) => state.dismissToast)
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 flex items-end justify-end">
@@ -37,7 +40,7 @@ const ToastViewport = () => {
             <button
               type="button"
               className="btn btn-xs btn-ghost"
-              onClick={() => dismiss(toast.id)}
+              onClick={() => dismissToast(toast.id)}
             >
               <FaXmark />
             </button>
