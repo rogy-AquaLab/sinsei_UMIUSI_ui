@@ -72,10 +72,12 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
   },
 }))
 
-export const disposeNotificationStore = () => {
+const disposeNotificationStore = () => {
   for (const timerId of dismissTimers.values()) {
     window.clearTimeout(timerId)
   }
   dismissTimers.clear()
   useNotificationStore.setState({ toasts: [], history: [] })
 }
+
+export const initializeNotificationStore = () => disposeNotificationStore

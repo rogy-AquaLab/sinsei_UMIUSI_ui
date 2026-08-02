@@ -169,10 +169,12 @@ export const useRosStore = create<RosStore>((set, get) => ({
   },
 }))
 
-export const disposeRosStore = () => {
+const disposeRosStore = () => {
   // コンポーネントのアンマウント時に念のためdisconnectする
   const ros = useRosStore.getState().ros
   detachHandlers(activeHandlers)
   if (ros) ros.close()
   useRosStore.setState({ ros: null, connectionState: 'disconnected' })
 }
+
+export const initializeRosStore = () => disposeRosStore
