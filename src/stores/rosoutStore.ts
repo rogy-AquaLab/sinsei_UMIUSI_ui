@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'
 import { create } from 'zustand'
 import type { RclLog, RclLogLevel } from '@/msgs/RclInterfacesMsgs'
 import {
@@ -55,7 +56,7 @@ const handleRosoutMessage = (message: RclLog) => {
     klass: 'badge-ghost',
   }
   const log: RosoutLog = {
-    id: `${message.stamp.sec}-${nanosec}-${message.name}-${crypto.randomUUID()}`,
+    id: `${message.stamp.sec}-${nanosec}-${message.name}-${uuidv4()}`,
     timestamp: new Date(timestampMs),
     level: message.level,
     levelLabel: severity.label,
