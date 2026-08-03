@@ -11,8 +11,7 @@ import { useRosStore } from '@/stores/rosStore'
 
 export type RosoutLog = {
   id: string
-  timestamp: string
-  rawTimestamp: number
+  timestamp: Date
   level: number
   levelLabel: string
   levelClass: string
@@ -57,12 +56,7 @@ const handleRosoutMessage = (message: RclLog) => {
   }
   const log: RosoutLog = {
     id: `${message.stamp.sec}-${nanosec}-${message.name}-${crypto.randomUUID()}`,
-    timestamp: new Date(timestampMs).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    }),
-    rawTimestamp: timestampMs,
+    timestamp: new Date(timestampMs),
     level: message.level,
     levelLabel: severity.label,
     levelClass: severity.klass,

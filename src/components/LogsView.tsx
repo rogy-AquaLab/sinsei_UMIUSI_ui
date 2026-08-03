@@ -11,6 +11,7 @@ import {
   useNotificationStore,
 } from '@/stores/notificationStore'
 import { type RosoutLog, useRosoutStore } from '@/stores/rosoutStore'
+import { formatTime } from '@/utils/formatTime'
 
 type RosoutLevelFilter = RosoutLog['level']
 const DEFAULT_ROSOUT_LEVEL = RCL_LOG_LEVEL_DEBUG
@@ -23,7 +24,7 @@ const severityStyles = {
 } as const
 
 const LogsView = () => {
-  const history = useNotificationStore((state) => state.history)
+  const notifications = useNotificationStore((state) => state.notifications)
   const rosoutLogs = useRosoutStore((state) => state.logs)
   const [activeTab, setActiveTab] = useState<'notifications' | 'rosout'>(
     'notifications',
@@ -32,9 +33,15 @@ const LogsView = () => {
     useState<RosoutLevelFilter>(DEFAULT_ROSOUT_LEVEL)
   const [rosoutNodeFilter, setRosoutNodeFilter] = useState('')
 
-  const orderedHistory = useMemo(() => [...history].reverse(), [history])
+  const orderedNotifications = useMemo(
+    () => [...notifications].reverse(),
+    [notifications],
+  )
   const rosoutOrdered = useMemo(
-    () => [...rosoutLogs].sort((a, b) => b.rawTimestamp - a.rawTimestamp),
+    () =>
+      [...rosoutLogs].sort(
+        (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+      ),
     [rosoutLogs],
   )
 
@@ -50,7 +57,7 @@ const LogsView = () => {
 
   const activeEntryCount =
     activeTab === 'notifications'
-      ? orderedHistory.length
+      ? orderedNotifications.length
       : rosoutFiltered.length
 
   const handleResetRosoutFilters = () => {
@@ -92,7 +99,7 @@ const LogsView = () => {
       </div>
       <div className="flex-1 min-h-0 px-6 py-4">
         {activeTab === 'notifications' ? (
-          <NotificationsTable logs={orderedHistory} />
+          <NotificationsTable logs={orderedNotifications} />
         ) : (
           <RosoutTable
             logs={rosoutFiltered}
@@ -152,7 +159,7 @@ const NotificationsTable = ({ logs }: { logs: Notification[] }) => {
             return (
               <tr key={notification.id} className="align-top">
                 <td className="text-base-content/60">
-                  {notification.timestamp}
+                  {formatTime(notification.timestamp)}
                 </td>
                 <td>
                   <span className={`badge ${style.badge} ${style.badgeText}`}>
@@ -237,7 +244,9 @@ const RosoutTable = ({
               <tbody>
                 {logs.map((log) => (
                   <tr key={log.id} className="align-top">
-                    <td className="text-base-content/60">{log.timestamp}</td>
+                    <td className="text-base-content/60">
+                      {formatTime(log.timestamp)}
+                    </td>
                     <td>
                       <span
                         className={`badge badge-md ${log.levelClass} text-base-100`}

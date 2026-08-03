@@ -7,77 +7,38 @@ export type Notification = {
   id: string
   message: string
   type: NotificationType
-  timestamp: string
+  timestamp: Date
 }
 
 type NotificationStore = {
   /**
-   * 右下にToastとして一時表示中のNotification
+   * これまでに発生したNotification
    */
-  toasts: Notification[]
-  /**
-   * これまでに発生したNotificationの履歴
-   */
-  history: Notification[]
+  notifications: Notification[]
   notify: (message: string, type?: NotificationType) => void
-  dismissToast: (id: string) => void
 }
 
-const TOAST_AUTO_DISMISS_MS = 4000
-const HISTORY_LIMIT = 50
-const dismissTimers = new Map<string, number>()
+const NOTIFICATION_LIMIT = 50
 
-export const useNotificationStore = create<NotificationStore>((set, get) => ({
-  toasts: [],
-  history: [],
+export const useNotificationStore = create<NotificationStore>((set) => ({
+  notifications: [],
 
   notify: (message, type = 'info') => {
     const notification: Notification = {
       id: uuidv4(),
       message,
       type,
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      }),
+      timestamp: new Date(),
     }
 
     set((state) => {
-      const history = [...state.history, notification]
+      const notifications = [...state.notifications, notification]
       return {
-        toasts: [...state.toasts, notification],
-        history:
-          history.length > HISTORY_LIMIT
-            ? history.slice(-HISTORY_LIMIT)
-            : history,
+        notifications:
+          notifications.length > NOTIFICATION_LIMIT
+            ? notifications.slice(-NOTIFICATION_LIMIT)
+            : notifications,
       }
     })
-
-    const timerId = window.setTimeout(() => {
-      get().dismissToast(notification.id)
-    }, TOAST_AUTO_DISMISS_MS)
-    dismissTimers.set(notification.id, timerId)
-  },
-
-  dismissToast: (id) => {
-    const timerId = dismissTimers.get(id)
-    if (timerId !== undefined) {
-      window.clearTimeout(timerId)
-      dismissTimers.delete(id)
-    }
-    set((state) => ({
-      toasts: state.toasts.filter((notification) => notification.id !== id),
-    }))
   },
 }))
-
-const disposeNotificationStore = () => {
-  for (const timerId of dismissTimers.values()) {
-    window.clearTimeout(timerId)
-  }
-  dismissTimers.clear()
-  useNotificationStore.setState({ toasts: [], history: [] })
-}
-
-export const initializeNotificationStore = () => disposeNotificationStore
