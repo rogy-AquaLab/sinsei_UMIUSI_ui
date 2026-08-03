@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { FaExclamationTriangle, FaSpinner } from 'react-icons/fa'
+import { FaExclamationTriangle } from 'react-icons/fa'
 import { type CameraId, useCameraStreamStore } from '@/stores/cameraStreamStore'
 
 type Props = {
@@ -47,13 +47,13 @@ const WebRtcVideo = ({ cameraId, label }: Props) => {
         >
           {status === 'connecting' ? (
             <>
-              <FaSpinner className="animate-spin text-2xl" />
-              <span className="text-sm">Connecting</span>
+              <span className="loading loading-spinner loading-lg" />
+              <span className="text-sm">Connecting...</span>
             </>
           ) : status === 'retrying' ? (
             <>
-              <FaExclamationTriangle className="text-2xl text-warning" />
-              <span className="text-sm">Reconnecting</span>
+              <span className="loading loading-spinner loading-lg" />
+              <span className="text-sm">Reconnecting...</span>
             </>
           ) : (
             <>
