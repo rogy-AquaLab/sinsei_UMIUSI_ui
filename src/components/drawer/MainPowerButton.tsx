@@ -1,8 +1,9 @@
 import { FaPowerOff } from 'react-icons/fa6'
-import { useRobotState } from '@/hooks/useRobotState'
+import { useRobotStateStore } from '@/stores/robotStateStore'
 
 const MainPowerButton = () => {
-  const { mainPowerState, setMainPower } = useRobotState()
+  const mainPowerState = useRobotStateStore((state) => state.mainPowerState)
+  const setMainPower = useRobotStateStore((state) => state.setMainPower)
 
   const isDisabled =
     mainPowerState === 'unknown' ||

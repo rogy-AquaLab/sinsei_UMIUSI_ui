@@ -1,8 +1,9 @@
 import { FaGamepad } from 'react-icons/fa'
-import { useGamepad } from '@/hooks/useGamepad'
+import { useGamepadStore } from '@/stores/gamepadStore'
 
 const GamepadStatusIcon = () => {
-  const { gamepads, selectedIndex } = useGamepad()
+  const gamepads = useGamepadStore((state) => state.gamepads)
+  const selectedIndex = useGamepadStore((state) => state.selectedIndex)
 
   return (
     <div

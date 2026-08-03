@@ -1,8 +1,10 @@
 import { FaPlug } from 'react-icons/fa'
-import { useRos } from '@/hooks/useRos'
+import { useRosStore } from '@/stores/rosStore'
 
 const RosConnectButton = () => {
-  const { connectionState, connect, disconnect } = useRos()
+  const connectionState = useRosStore((state) => state.connectionState)
+  const connect = useRosStore((state) => state.connect)
+  const disconnect = useRosStore((state) => state.disconnect)
 
   let handleClick: (() => void) | undefined
   let label: string, tone: string

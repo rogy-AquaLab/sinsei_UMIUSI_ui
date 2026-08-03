@@ -1,9 +1,13 @@
-import { useGamepad } from '@/hooks/useGamepad'
+import { useGamepadStore } from '@/stores/gamepadStore'
 
 const DEFAULT_TEXT = 'No Gamepad Connected'
 
 const GamepadSelect = () => {
-  const { gamepads, selectedIndex, selectGamepadByIndex } = useGamepad()
+  const gamepads = useGamepadStore((state) => state.gamepads)
+  const selectedIndex = useGamepadStore((state) => state.selectedIndex)
+  const selectGamepadByIndex = useGamepadStore(
+    (state) => state.selectGamepadByIndex,
+  )
 
   return (
     <select
