@@ -158,10 +158,18 @@ export const useRobotStateStore = create<RobotStateStore>((set, get) => ({
       serviceOptions,
       null,
     )
+    const isCurrentSessionConnected = () => {
+      const current = useRosStore.getState()
+      return (
+        current.session === session && current.connectionState === 'connected'
+      )
+    }
 
     set({ mainPowerState: on ? 'poweringOn' : 'poweringOff' })
     void serviceCall
       .then((response) => {
+        if (!isCurrentSessionConnected()) return
+
         if (response.success) {
           console.log(`Power ${on ? 'ON' : 'OFF'} requested`)
           useNotificationStore
@@ -181,6 +189,8 @@ export const useRobotStateStore = create<RobotStateStore>((set, get) => ({
         set({ mainPowerState: on ? 'off' : 'on' })
       })
       .catch(() => {
+        if (!isCurrentSessionConnected()) return
+
         console.error(`Power ${on ? 'ON' : 'OFF'} service call failed`)
         useNotificationStore
           .getState()
