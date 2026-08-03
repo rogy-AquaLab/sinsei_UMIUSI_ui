@@ -1,4 +1,3 @@
-import { type Ros, Service, Topic } from 'roslib'
 import { create } from 'zustand'
 import type { RobotState } from '@/msgs/OriginalMsgs'
 import type {
@@ -25,6 +24,23 @@ export type MainPowerState =
   | 'poweringOn'
   | 'poweringOff'
 export type ModeTransitionState = 'idle' | 'transitioning'
+
+const POWER_ON_SERVICE = {
+  name: '/user_input/power_on',
+  serviceType: 'sinsei_umiusi_msgs/srv/PowerOn',
+}
+const POWER_OFF_SERVICE = {
+  name: '/user_input/power_off',
+  serviceType: 'sinsei_umiusi_msgs/srv/PowerOff',
+}
+const SET_MODE_SERVICE = {
+  name: '/user_input/set_mode',
+  serviceType: 'sinsei_umiusi_msgs/srv/SetMode',
+}
+const ROBOT_STATE_TOPIC = {
+  name: '/robot_state',
+  messageType: 'sinsei_umiusi_msgs/msg/RobotState',
+}
 
 type RobotStateStore = {
   mainPowerState: MainPowerState
@@ -57,11 +73,7 @@ type RobotStateStore = {
   enterStandby: () => void
 }
 
-let activeRos: Ros | null = null
-let powerOnService: Service | null = null
-let powerOffService: Service | null = null
-let setModeService: Service | null = null
-let robotStateTopic: Topic | null = null
+let disposeRobotStateSubscription: (() => void) | null = null
 
 const resetRemoteState = () => {
   useRobotStateStore.setState({
@@ -77,20 +89,23 @@ const requestSetMode = (requestedMode: RobotMode) => {
     console.warn('Mode transition already in progress')
     return
   }
-  if (!setModeService) {
+  const { session, connectionState } = useRosStore.getState()
+  if (!session || connectionState !== 'connected') {
     useNotificationStore
       .getState()
       .notify('Set Mode service is unavailable', 'error')
     return
   }
 
-  useRobotStateStore.setState({ modeTransitionState: 'transitioning' })
   const request: SetModeRequest = { mode: robotModeToNum(requestedMode) }
-
-  setModeService.callService(
+  const serviceCall = session.call<SetModeRequest, SetModeResponse>(
+    SET_MODE_SERVICE,
     request,
-    (_response) => {
-      const response = _response as SetModeResponse
+  )
+
+  useRobotStateStore.setState({ modeTransitionState: 'transitioning' })
+  void serviceCall
+    .then((response) => {
       if (response.success) {
         console.log(`Set Mode to ${robotModeToString(requestedMode)} requested`)
         // useNotificationStore
@@ -107,15 +122,14 @@ const requestSetMode = (requestedMode: RobotMode) => {
         .getState()
         .notify(`Set Mode failed: ${response.error_msg}`, 'error')
       useRobotStateStore.setState({ modeTransitionState: 'idle' })
-    },
-    (error) => {
+    })
+    .catch((error) => {
       console.error('Set Mode service call failed', error)
       useNotificationStore
         .getState()
         .notify('Set Mode service call failed', 'error')
       useRobotStateStore.setState({ modeTransitionState: 'idle' })
-    },
-  )
+    })
 }
 
 export const useRobotStateStore = create<RobotStateStore>((set, get) => ({
@@ -131,19 +145,23 @@ export const useRobotStateStore = create<RobotStateStore>((set, get) => ({
       return
     }
 
-    const service = on ? powerOnService : powerOffService
-    if (!service) {
+    const { session, connectionState } = useRosStore.getState()
+    if (!session || connectionState !== 'connected') {
       useNotificationStore
         .getState()
         .notify(`Power ${on ? 'ON' : 'OFF'} service is unavailable`, 'error')
       return
     }
 
-    set({ mainPowerState: on ? 'poweringOn' : 'poweringOff' })
-    service.callService(
+    const serviceOptions = on ? POWER_ON_SERVICE : POWER_OFF_SERVICE
+    const serviceCall = session.call<null, PowerOnResponce | PowerOffResponce>(
+      serviceOptions,
       null,
-      (_response) => {
-        const response = _response as PowerOnResponce | PowerOffResponce
+    )
+
+    set({ mainPowerState: on ? 'poweringOn' : 'poweringOff' })
+    void serviceCall
+      .then((response) => {
         if (response.success) {
           console.log(`Power ${on ? 'ON' : 'OFF'} requested`)
           useNotificationStore
@@ -161,16 +179,15 @@ export const useRobotStateStore = create<RobotStateStore>((set, get) => ({
           )
         // 状態を元に戻す
         set({ mainPowerState: on ? 'off' : 'on' })
-      },
-      () => {
+      })
+      .catch(() => {
         console.error(`Power ${on ? 'ON' : 'OFF'} service call failed`)
         useNotificationStore
           .getState()
           .notify(`Power ${on ? 'ON' : 'OFF'} service call failed`, 'error')
         // 状態を元に戻す
         set({ mainPowerState: on ? 'off' : 'on' })
-      },
-    )
+      })
   },
 
   setOperationMode: (operationMode) => set({ operationMode }),
@@ -190,75 +207,56 @@ export const useRobotStateStore = create<RobotStateStore>((set, get) => ({
   },
 }))
 
-const configureRos = (ros: Ros | null) => {
-  if (activeRos === ros) return
+const handleRobotStateMessage = (message: RobotState) => {
+  const mode = numToRobotMode(message.state) ?? null
+  const previousMode = useRobotStateStore.getState().mode
 
-  robotStateTopic?.unsubscribe()
-  activeRos = ros
-  powerOnService = null
-  powerOffService = null
-  setModeService = null
-  robotStateTopic = null
+  useRobotStateStore.setState({
+    mainPowerState: message.state === RobotModeMap.POWERED_OFF ? 'off' : 'on',
+    mode,
+    // モードが変化したらmodeTransitionStateを'idle'に戻す
+    modeTransitionState:
+      previousMode !== mode
+        ? 'idle'
+        : useRobotStateStore.getState().modeTransitionState,
+  })
+}
 
-  if (!ros) return
+const syncRobotStateSubscription = () => {
+  disposeRobotStateSubscription?.()
+  disposeRobotStateSubscription = null
 
-  powerOnService = new Service({
-    ros,
-    name: '/user_input/power_on',
-    serviceType: 'sinsei_umiusi_msgs/srv/PowerOn',
-  })
-  powerOffService = new Service({
-    ros,
-    name: '/user_input/power_off',
-    serviceType: 'sinsei_umiusi_msgs/srv/PowerOff',
-  })
-  setModeService = new Service({
-    ros,
-    name: '/user_input/set_mode',
-    serviceType: 'sinsei_umiusi_msgs/srv/SetMode',
-  })
-  robotStateTopic = new Topic({
-    ros,
-    name: '/robot_state',
-    messageType: 'sinsei_umiusi_msgs/msg/RobotState',
-  })
+  const { session, connectionState } = useRosStore.getState()
+  if (!session || connectionState !== 'connected') return
 
-  robotStateTopic.subscribe((_message) => {
-    const message = _message as RobotState
-    const mode = numToRobotMode(message.state) ?? null
-    const previousMode = useRobotStateStore.getState().mode
-
-    useRobotStateStore.setState({
-      mainPowerState: message.state === RobotModeMap.POWERED_OFF ? 'off' : 'on',
-      mode,
-      // モードが変化したらmodeTransitionStateを'idle'に戻す
-      modeTransitionState:
-        previousMode !== mode
-          ? 'idle'
-          : useRobotStateStore.getState().modeTransitionState,
-    })
-  })
+  disposeRobotStateSubscription = session.subscribe<RobotState>(
+    ROBOT_STATE_TOPIC,
+    handleRobotStateMessage,
+  )
 }
 
 export const initializeRobotStateStore = () => {
   const initialRosState = useRosStore.getState()
-  configureRos(initialRosState.ros)
+  syncRobotStateSubscription()
   if (initialRosState.connectionState !== 'connected') resetRemoteState()
 
   const unsubscribe = useRosStore.subscribe((state, previousState) => {
-    if (state.ros !== previousState.ros) configureRos(state.ros)
     if (
-      state.connectionState !== previousState.connectionState &&
-      state.connectionState !== 'connected'
+      state.session !== previousState.session ||
+      state.connectionState !== previousState.connectionState
     ) {
-      // 接続が切れたら状態をリセット
-      resetRemoteState()
+      syncRobotStateSubscription()
+      if (state.connectionState !== 'connected') {
+        // 接続が切れたら状態をリセット
+        resetRemoteState()
+      }
     }
   })
 
   return () => {
     unsubscribe()
-    configureRos(null)
+    disposeRobotStateSubscription?.()
+    disposeRobotStateSubscription = null
     resetRemoteState()
   }
 }

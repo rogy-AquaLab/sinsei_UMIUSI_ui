@@ -28,7 +28,8 @@ export const useGamepadStore = create<GamepadStore>((set, get) => ({
 }))
 
 /**
- * Reactのライフサイクル外からゲームパッドの状態を取得するために使用する
+ * Zustandの更新やReactの再レンダーを発生させず、
+ * 最新のゲームパッド状態を取得する
  */
 export const getLatestGamepadByIndex = (index: Gamepad['index']) =>
   latestGamepads.get(index) ?? null

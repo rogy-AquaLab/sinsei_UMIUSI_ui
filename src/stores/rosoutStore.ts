@@ -1,4 +1,3 @@
-import { type Ros, Topic } from 'roslib'
 import { create } from 'zustand'
 import type { RclLog, RclLogLevel } from '@/msgs/RclInterfacesMsgs'
 import {
@@ -46,69 +45,72 @@ export const useRosoutStore = create<RosoutStore>((set) => ({
   reset: () => set({ logs: [] }),
 }))
 
-let activeRos: Ros | null = null
-let rosoutTopic: Topic | null = null
+let disposeRosoutSubscription: (() => void) | null = null
 
-const configureRos = (ros: Ros | null) => {
-  if (activeRos === ros) return
+const handleRosoutMessage = (message: RclLog) => {
+  const nanosec = message.stamp.nanosec ?? 0
+  const timestampMs =
+    (message.stamp.sec ?? 0) * 1000 + Math.floor(nanosec / 1e6) || Date.now()
+  const severity = levelMap[message.level as RclLogLevel] ?? {
+    label: `LV${message.level}`,
+    klass: 'badge-ghost',
+  }
+  const log: RosoutLog = {
+    id: `${message.stamp.sec}-${nanosec}-${message.name}-${crypto.randomUUID()}`,
+    timestamp: new Date(timestampMs).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }),
+    rawTimestamp: timestampMs,
+    level: message.level,
+    levelLabel: severity.label,
+    levelClass: severity.klass,
+    name: message.name,
+    message: message.msg,
+    file: message.file,
+    function: message.function,
+    line: message.line,
+  }
 
-  rosoutTopic?.unsubscribe()
-  activeRos = ros
-  rosoutTopic = null
-  if (!ros) return
-
-  rosoutTopic = new Topic({
-    ros,
-    name: ROSOUT_TOPIC,
-    messageType: ROSOUT_MESSAGE_TYPE,
-  })
-
-  rosoutTopic.subscribe((_message) => {
-    const message = _message as RclLog
-    const nanosec = message.stamp.nanosec ?? 0
-    const timestampMs =
-      (message.stamp.sec ?? 0) * 1000 + Math.floor(nanosec / 1e6) || Date.now()
-    const severity = levelMap[message.level as RclLogLevel] ?? {
-      label: `LV${message.level}`,
-      klass: 'badge-ghost',
+  useRosoutStore.setState((state) => {
+    const logs = [...state.logs, log]
+    return {
+      logs: logs.length > MAX_ROSOUT_LOGS ? logs.slice(-MAX_ROSOUT_LOGS) : logs,
     }
-    const log: RosoutLog = {
-      id: `${message.stamp.sec}-${nanosec}-${message.name}-${crypto.randomUUID()}`,
-      timestamp: new Date(timestampMs).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      }),
-      rawTimestamp: timestampMs,
-      level: message.level,
-      levelLabel: severity.label,
-      levelClass: severity.klass,
-      name: message.name,
-      message: message.msg,
-      file: message.file,
-      function: message.function,
-      line: message.line,
-    }
-
-    useRosoutStore.setState((state) => {
-      const logs = [...state.logs, log]
-      return {
-        logs:
-          logs.length > MAX_ROSOUT_LOGS ? logs.slice(-MAX_ROSOUT_LOGS) : logs,
-      }
-    })
   })
+}
+
+const syncRosoutSubscription = () => {
+  disposeRosoutSubscription?.()
+  disposeRosoutSubscription = null
+
+  const { session, connectionState } = useRosStore.getState()
+  if (!session || connectionState !== 'connected') return
+
+  disposeRosoutSubscription = session.subscribe<RclLog>(
+    {
+      name: ROSOUT_TOPIC,
+      messageType: ROSOUT_MESSAGE_TYPE,
+    },
+    handleRosoutMessage,
+  )
 }
 
 export const initializeRosoutStore = () => {
   const initialRosState = useRosStore.getState()
-  configureRos(initialRosState.ros)
+  syncRosoutSubscription()
   if (initialRosState.connectionState === 'disconnected') {
     useRosoutStore.getState().reset()
   }
 
   const unsubscribe = useRosStore.subscribe((state, previousState) => {
-    if (state.ros !== previousState.ros) configureRos(state.ros)
+    if (
+      state.session !== previousState.session ||
+      state.connectionState !== previousState.connectionState
+    ) {
+      syncRosoutSubscription()
+    }
     if (
       state.connectionState !== previousState.connectionState &&
       state.connectionState === 'disconnected'
@@ -119,7 +121,8 @@ export const initializeRosoutStore = () => {
 
   return () => {
     unsubscribe()
-    configureRos(null)
+    disposeRosoutSubscription?.()
+    disposeRosoutSubscription = null
     useRosoutStore.getState().reset()
   }
 }
