@@ -1,28 +1,13 @@
 import { useState } from 'react'
 import { FaExchangeAlt, FaThLarge, FaVideo } from 'react-icons/fa'
 import WebRtcVideo from '@/components/camera/WebRtcVideo'
-import { useCameraConfigStore } from '@/stores/cameraConfigStore'
+import { CAMERA_STREAMS, type CameraId } from '@/stores/cameraStreamStore'
 
-type CameraId = 'front' | 'down'
 type ViewMode = CameraId | 'dual'
 
 const CameraViewer = () => {
-  const mediaMtxUrl = useCameraConfigStore((state) => state.mediaMtxUrl)
   const [viewMode, setViewMode] = useState<ViewMode>('dual')
   const [primaryCamera, setPrimaryCamera] = useState<CameraId>('front')
-
-  const cameras = [
-    {
-      id: 'front' as const,
-      label: 'Front camera',
-      url: `${mediaMtxUrl}/cam1/whep`,
-    },
-    {
-      id: 'down' as const,
-      label: 'Down camera',
-      url: `${mediaMtxUrl}/cam2/whep`,
-    },
-  ]
 
   const isVisible = (id: CameraId) => viewMode === 'dual' || viewMode === id
   const isPrimary = (id: CameraId) =>
@@ -30,7 +15,7 @@ const CameraViewer = () => {
 
   return (
     <div className="relative h-full w-full bg-black">
-      {cameras.map((camera) => {
+      {CAMERA_STREAMS.map((camera) => {
         const visible = isVisible(camera.id)
         const primary = isPrimary(camera.id)
         return (
@@ -44,7 +29,9 @@ const CameraViewer = () => {
                   : 'absolute bottom-4 right-4 z-20 aspect-video w-72 max-w-[42%] overflow-hidden rounded-lg border border-white/30 shadow-2xl'
             }
           >
-            {visible && <WebRtcVideo label={camera.label} url={camera.url} />}
+            {visible && (
+              <WebRtcVideo cameraId={camera.id} label={camera.label} />
+            )}
             {visible && !primary && (
               <button
                 type="button"
