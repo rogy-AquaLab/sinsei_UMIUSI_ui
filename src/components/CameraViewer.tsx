@@ -29,7 +29,7 @@ const CameraViewer = () => {
     viewMode === id || (viewMode === 'dual' && primaryCamera === id)
 
   return (
-    <div className="relative h-full w-full bg-[radial-gradient(ellipse_at_center,#12303b_0%,#07171d_55%,#020709_100%)]">
+    <div className="relative h-full w-full bg-black">
       {cameras.map((camera) => {
         const visible = isVisible(camera.id)
         const primary = isPrimary(camera.id)
@@ -41,7 +41,7 @@ const CameraViewer = () => {
                 ? 'hidden'
                 : primary
                   ? 'absolute inset-0'
-                  : 'absolute bottom-4 right-4 z-20 aspect-video w-72 max-w-[42%] overflow-hidden rounded-lg border border-cyan-200/30 shadow-2xl'
+                  : 'absolute bottom-4 right-4 z-20 aspect-video w-72 max-w-[42%] overflow-hidden rounded-lg border border-white/30 shadow-2xl'
             }
           >
             {visible && <WebRtcVideo label={camera.label} url={camera.url} />}

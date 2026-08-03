@@ -79,7 +79,7 @@ const WebRtcVideo = ({ label, url }: Props) => {
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[radial-gradient(ellipse_at_center,#12303b_0%,#07171d_55%,#020709_100%)]">
+    <div className="relative h-full w-full overflow-hidden bg-black">
       <video
         ref={videoRef}
         className="pointer-events-none h-full w-full object-contain"
