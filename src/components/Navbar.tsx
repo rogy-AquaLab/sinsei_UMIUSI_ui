@@ -3,7 +3,7 @@ import GamepadStatusIcon from '@/components/navbar/GamepadStatusIcon'
 import MainTabs from '@/components/navbar/MainTabs'
 import ModeIcon from '@/components/navbar/ModeIcon'
 import RosStatusBadge from '@/components/navbar/RosStatusBadge'
-import type { MainContentTab } from '@/types/navigation'
+import type { MainContentTab } from '@/mainTabs'
 
 type NavbarProps = {
   activeTab: MainContentTab
