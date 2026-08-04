@@ -1,5 +1,4 @@
-import { FaCamera, FaClipboardList } from 'react-icons/fa'
-import type { MainContentTab } from '@/types/navigation'
+import { MAIN_TABS, type MainContentTab } from '@/mainTabs'
 
 type MainTabsProps = {
   active: MainContentTab
@@ -13,24 +12,19 @@ const MainTabs = ({ active, onChange }: MainTabsProps) => {
       className="tabs tabs-box"
       aria-label="Main content tabs"
     >
-      <button
-        type="button"
-        role="tab"
-        className={`tab gap-2 ${active === 'camera' ? 'tab-active' : ''}`}
-        onClick={() => onChange('camera')}
-      >
-        <FaCamera />
-        Camera
-      </button>
-      <button
-        type="button"
-        role="tab"
-        className={`tab gap-2 ${active === 'logs' ? 'tab-active' : ''}`}
-        onClick={() => onChange('logs')}
-      >
-        <FaClipboardList />
-        Logs
-      </button>
+      {MAIN_TABS.map(({ id, label, icon: Icon }) => (
+        <button
+          key={id}
+          type="button"
+          role="tab"
+          aria-selected={active === id}
+          className={`tab gap-2 ${active === id ? 'tab-active' : ''}`}
+          onClick={() => onChange(id)}
+        >
+          <Icon />
+          {label}
+        </button>
+      ))}
     </div>
   )
 }

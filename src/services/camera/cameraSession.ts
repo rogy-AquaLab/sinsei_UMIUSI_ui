@@ -1,4 +1,4 @@
-import { WhepReader } from '@/lib/WhepReader'
+import { WhepReader } from '@/services/camera/WhepReader'
 
 export type CameraSessionStatus = 'connecting' | 'live' | 'retrying' | 'failed'
 

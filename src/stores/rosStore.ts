@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createRosSession, type RosSession } from '@/services/rosSession'
+import { useConnectionConfigStore } from '@/stores/connectionConfigStore'
 import { useNotificationStore } from '@/stores/notificationStore'
 
 export type RosConnectionState =
@@ -12,11 +13,6 @@ export type RosConnectionState =
 type RosStore = {
   session: RosSession | null
   connectionState: RosConnectionState
-  /**
-   * rosbridgeのWebSocket URL
-   */
-  url: string
-  setUrl: (url: string) => void
   connect: () => void
   disconnect: () => void
 }
@@ -24,20 +20,16 @@ type RosStore = {
 export const useRosStore = create<RosStore>((set, get) => ({
   session: null,
   connectionState: 'disconnected',
-  url: 'ws://localhost:9090',
-
-  setUrl: (url) => {
-    if (get().connectionState !== 'disconnected') return
-    set({ url })
-  },
 
   connect: () => {
-    const { connectionState, url } = get()
+    const { connectionState } = get()
     if (connectionState !== 'disconnected') {
       console.log('Already connected or connecting; skipping.')
       return
     }
 
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const url = `${protocol}//${useConnectionConfigStore.getState().robotHost}:9090`
     console.log('Connecting to rosbridge server at:', url)
     let session: RosSession
     session = createRosSession(url, {
