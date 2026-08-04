@@ -3,7 +3,7 @@ import {
   type CameraSession,
   type CameraSessionState,
   createCameraSession,
-} from '@/services/cameraSession'
+} from '@/services/camera/cameraSession'
 import { useCameraConfigStore } from '@/stores/cameraConfigStore'
 import { useNotificationStore } from '@/stores/notificationStore'
 
