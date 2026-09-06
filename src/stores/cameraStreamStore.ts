@@ -3,8 +3,8 @@ import {
   type CameraSession,
   type CameraSessionState,
   createCameraSession,
-} from '@/services/cameraSession'
-import { useCameraConfigStore } from '@/stores/cameraConfigStore'
+} from '@/services/camera/cameraSession'
+import { useConnectionConfigStore } from '@/stores/connectionConfigStore'
 import { useNotificationStore } from '@/stores/notificationStore'
 
 export type CameraId = 'front' | 'down'
@@ -56,7 +56,9 @@ export const initializeCameraStreamStore = () => {
   const sessions = new Map<CameraId, CameraSession>()
   activeSessions = sessions
 
-  const startSessions = (mediaMtxUrl: string) => {
+  const startSessions = (robotHost: string) => {
+    const mediaMtxUrl = `${window.location.protocol}//${robotHost}:8889`
+
     for (const session of sessions.values()) session.close()
     sessions.clear()
     useCameraStreamStore.setState({ cameras: createInitialCameraStates() })
@@ -86,12 +88,12 @@ export const initializeCameraStreamStore = () => {
     }
   }
 
-  startSessions(useCameraConfigStore.getState().mediaMtxUrl)
+  startSessions(useConnectionConfigStore.getState().robotHost)
 
-  const unsubscribeConfig = useCameraConfigStore.subscribe(
+  const unsubscribeConfig = useConnectionConfigStore.subscribe(
     (state, previousState) => {
-      if (state.mediaMtxUrl === previousState.mediaMtxUrl) return
-      startSessions(state.mediaMtxUrl)
+      if (state.robotHost === previousState.robotHost) return
+      startSessions(state.robotHost)
     },
   )
 
