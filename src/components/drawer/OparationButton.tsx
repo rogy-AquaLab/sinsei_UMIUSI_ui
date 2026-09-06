@@ -1,17 +1,17 @@
 import type { ReactElement } from 'react'
 import { FaPause, FaPlay } from 'react-icons/fa6'
-import { useRobotState } from '@/hooks/useRobotState'
 import { robotModeToString } from '@/msgs/utils/RobotMode'
+import { useRobotStateStore } from '@/stores/robotStateStore'
 
 const OperationButton = () => {
-  const {
-    mainPowerState,
-    mode,
-    modeTransitionState,
-    operationMode,
-    enterOperation,
-    enterStandby,
-  } = useRobotState()
+  const mainPowerState = useRobotStateStore((state) => state.mainPowerState)
+  const mode = useRobotStateStore((state) => state.mode)
+  const modeTransitionState = useRobotStateStore(
+    (state) => state.modeTransitionState,
+  )
+  const operationMode = useRobotStateStore((state) => state.operationMode)
+  const enterOperation = useRobotStateStore((state) => state.enterOperation)
+  const enterStandby = useRobotStateStore((state) => state.enterStandby)
 
   const isPoweredOn = mainPowerState === 'on'
   const isStandby = mode === 'STANDBY'

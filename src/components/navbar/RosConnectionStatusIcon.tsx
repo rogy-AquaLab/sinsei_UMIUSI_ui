@@ -1,8 +1,8 @@
 import { FaLink, FaUnlink } from 'react-icons/fa'
-import { useRos } from '@/hooks/useRos'
+import { useRosStore } from '@/stores/rosStore'
 
 const RosConnectionStatusIcon = () => {
-  const { connectionState } = useRos()
+  const connectionState = useRosStore((state) => state.connectionState)
   const isConnected = connectionState === 'connected'
   const isDisconnected = connectionState === 'disconnected'
   const Icon = isDisconnected ? FaUnlink : FaLink

@@ -1,12 +1,14 @@
 import { FaHeartbeat } from 'react-icons/fa'
-import { useHealth } from '@/hooks/useHealth'
-import { useRos } from '@/hooks/useRos'
-import { useThrusterState } from '@/hooks/useThrusterState'
+import { useHealthStore } from '@/stores/healthStore'
+import { useRosStore } from '@/stores/rosStore'
+import { useThrusterStateStore } from '@/stores/thrusterStateStore'
 
 const SystemStatusIcon = () => {
-  const { connectionState } = useRos()
-  const { overallStatus } = useHealth()
-  const { telemetryStatus } = useThrusterState()
+  const connectionState = useRosStore((state) => state.connectionState)
+  const overallStatus = useHealthStore((state) => state.overallStatus)
+  const telemetryStatus = useThrusterStateStore(
+    (state) => state.telemetryStatus,
+  )
 
   const config =
     connectionState !== 'connected'

@@ -7,14 +7,13 @@ import {
   FaMicrochip,
   FaQuestionCircle,
 } from 'react-icons/fa'
-import type { HealthStatus } from '@/contexts/HealthContext'
-import { useHealth } from '@/hooks/useHealth'
 import {
   type EscState,
   type HighPowerCircuitInfo,
   LOW_POWER_CIRCUIT_STATE,
   type LowPowerCircuitInfo,
 } from '@/msgs/OriginalMsgs'
+import { type HealthStatus, useHealthStore } from '@/stores/healthStore'
 
 const statusConfig: Record<
   HealthStatus,
@@ -203,7 +202,7 @@ const HealthPanel = () => {
     lowPowerStatus,
     highPowerStatus,
     overallStatus,
-  } = useHealth()
+  } = useHealthStore()
   const overall = statusConfig[overallStatus]
   const OverallIcon = overall.icon
 

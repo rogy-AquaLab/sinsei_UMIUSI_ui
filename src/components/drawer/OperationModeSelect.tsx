@@ -1,17 +1,17 @@
-import { useRobotState } from '@/hooks/useRobotState'
 import { type RobotMode, robotModeToString } from '@/msgs/utils/RobotMode'
+import { useRobotStateStore } from '@/stores/robotStateStore'
 
 type OperationMode = Exclude<RobotMode, 'STANDBY' | 'POWERED_OFF'>
 const OPERATION_MODES: OperationMode[] = ['MANUAL', 'AUTO', 'DEBUG']
 
 const OperationModeSelect = () => {
-  const {
-    mainPowerState,
-    mode,
-    modeTransitionState,
-    operationMode,
-    setOperationMode,
-  } = useRobotState()
+  const mainPowerState = useRobotStateStore((state) => state.mainPowerState)
+  const mode = useRobotStateStore((state) => state.mode)
+  const modeTransitionState = useRobotStateStore(
+    (state) => state.modeTransitionState,
+  )
+  const operationMode = useRobotStateStore((state) => state.operationMode)
+  const setOperationMode = useRobotStateStore((state) => state.setOperationMode)
 
   return (
     <select

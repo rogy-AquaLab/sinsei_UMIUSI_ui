@@ -4,11 +4,11 @@ import {
   FaQuestionCircle,
   FaRobot,
 } from 'react-icons/fa'
-import { useRobotState } from '@/hooks/useRobotState'
 import { robotModeToString } from '@/msgs/utils/RobotMode'
+import { useRobotStateStore } from '@/stores/robotStateStore'
 
 const ModeIcon = () => {
-  const { mode } = useRobotState()
+  const mode = useRobotStateStore((state) => state.mode)
 
   const tone =
     mode === null

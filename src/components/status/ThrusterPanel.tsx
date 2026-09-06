@@ -1,10 +1,10 @@
 import { FaClock, FaQuestionCircle, FaTachometerAlt } from 'react-icons/fa'
-import { useThrusterState } from '@/hooks/useThrusterState'
 import {
   THRUSTER_MODE,
   type ThrusterState,
   type ThrusterStateAll,
 } from '@/msgs/OriginalMsgs'
+import { useThrusterStateStore } from '@/stores/thrusterStateStore'
 
 type ThrusterPosition = keyof ThrusterStateAll
 
@@ -66,7 +66,7 @@ const formatRpm = (thruster: ThrusterState | undefined) =>
   thruster ? Math.round(thruster.rpm).toLocaleString() : '--'
 
 const ThrusterPanel = () => {
-  const { thrusters, telemetryStatus } = useThrusterState()
+  const { thrusters, telemetryStatus } = useThrusterStateStore()
   const isFresh = telemetryStatus === 'fresh'
 
   return (

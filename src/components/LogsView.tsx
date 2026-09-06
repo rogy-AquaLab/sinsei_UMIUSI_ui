@@ -1,8 +1,4 @@
 import { useMemo, useState } from 'react'
-import type { RosoutLog } from '@/contexts/RosoutContext'
-import type { Toast } from '@/contexts/ToastContext'
-import { useRosout } from '@/hooks/useRosout'
-import { useToast } from '@/hooks/useToast'
 import {
   RCL_LOG_LEVEL_DEBUG,
   RCL_LOG_LEVEL_ERROR,
@@ -10,6 +6,12 @@ import {
   RCL_LOG_LEVEL_INFO,
   RCL_LOG_LEVEL_WARN,
 } from '@/msgs/RclInterfacesMsgs'
+import {
+  type Notification,
+  useNotificationStore,
+} from '@/stores/notificationStore'
+import { type RosoutLog, useRosoutStore } from '@/stores/rosoutStore'
+import { formatTime } from '@/utils/formatTime'
 
 type RosoutLevelFilter = RosoutLog['level']
 const DEFAULT_ROSOUT_LEVEL = RCL_LOG_LEVEL_DEBUG
@@ -22,8 +24,8 @@ const severityStyles = {
 } as const
 
 const LogsView = () => {
-  const { history } = useToast()
-  const { logs: rosoutLogs } = useRosout()
+  const notifications = useNotificationStore((state) => state.notifications)
+  const rosoutLogs = useRosoutStore((state) => state.logs)
   const [activeTab, setActiveTab] = useState<'notifications' | 'rosout'>(
     'notifications',
   )
@@ -31,9 +33,15 @@ const LogsView = () => {
     useState<RosoutLevelFilter>(DEFAULT_ROSOUT_LEVEL)
   const [rosoutNodeFilter, setRosoutNodeFilter] = useState('')
 
-  const orderedHistory = useMemo(() => [...history].reverse(), [history])
+  const orderedNotifications = useMemo(
+    () => [...notifications].reverse(),
+    [notifications],
+  )
   const rosoutOrdered = useMemo(
-    () => [...rosoutLogs].sort((a, b) => b.rawTimestamp - a.rawTimestamp),
+    () =>
+      [...rosoutLogs].sort(
+        (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+      ),
     [rosoutLogs],
   )
 
@@ -49,7 +57,7 @@ const LogsView = () => {
 
   const activeEntryCount =
     activeTab === 'notifications'
-      ? orderedHistory.length
+      ? orderedNotifications.length
       : rosoutFiltered.length
 
   const handleResetRosoutFilters = () => {
@@ -91,7 +99,7 @@ const LogsView = () => {
       </div>
       <div className="flex-1 min-h-0 px-6 py-4">
         {activeTab === 'notifications' ? (
-          <NotificationsTable logs={orderedHistory} />
+          <NotificationsTable logs={orderedNotifications} />
         ) : (
           <RosoutTable
             logs={rosoutFiltered}
@@ -126,7 +134,7 @@ const levelOptions: { label: string; value: RosoutLevelFilter }[] = [
   { label: 'Fatal', value: RCL_LOG_LEVEL_FATAL },
 ]
 
-const NotificationsTable = ({ logs }: { logs: Toast[] }) => {
+const NotificationsTable = ({ logs }: { logs: Notification[] }) => {
   if (logs.length === 0) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-base-content/60">
@@ -146,17 +154,19 @@ const NotificationsTable = ({ logs }: { logs: Toast[] }) => {
           </tr>
         </thead>
         <tbody>
-          {logs.map((toast) => {
-            const style = severityStyles[toast.type]
+          {logs.map((notification) => {
+            const style = severityStyles[notification.type]
             return (
-              <tr key={toast.id} className="align-top">
-                <td className="text-base-content/60">{toast.timestamp}</td>
+              <tr key={notification.id} className="align-top">
+                <td className="text-base-content/60">
+                  {formatTime(notification.timestamp)}
+                </td>
                 <td>
                   <span className={`badge ${style.badge} ${style.badgeText}`}>
-                    {toast.type.toUpperCase()}
+                    {notification.type.toUpperCase()}
                   </span>
                 </td>
-                <td className="text-base-content">{toast.message}</td>
+                <td className="text-base-content">{notification.message}</td>
               </tr>
             )
           })}
@@ -234,7 +244,9 @@ const RosoutTable = ({
               <tbody>
                 {logs.map((log) => (
                   <tr key={log.id} className="align-top">
-                    <td className="text-base-content/60">{log.timestamp}</td>
+                    <td className="text-base-content/60">
+                      {formatTime(log.timestamp)}
+                    </td>
                     <td>
                       <span
                         className={`badge badge-md ${log.levelClass} text-base-100`}
