@@ -4,7 +4,7 @@ import MainTabs from '@/components/navbar/MainTabs'
 import ModeIcon from '@/components/navbar/ModeIcon'
 import RosConnectionStatusIcon from '@/components/navbar/RosConnectionStatusIcon'
 import SystemStatusIcon from '@/components/navbar/SystemStatusIcon'
-import type { MainContentTab } from '@/types/navigation'
+import type { MainContentTab } from '@/mainTabs'
 
 type NavbarProps = {
   activeTab: MainContentTab

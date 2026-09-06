@@ -1,8 +1,8 @@
 import type * as Msgs from '@/msgs/OriginalMsgs'
+import { mapGamepad } from '@/services/gamepad/gamepadMapping'
 import type { Publisher } from '@/services/rosSession'
 import { getLatestGamepadByIndex, useGamepadStore } from '@/stores/gamepadStore'
 import { useRosStore } from '@/stores/rosStore'
-import { mapGamepad } from '@/utils/gamepadMapping'
 
 type GamepadPublisherOptions = {
   /**
