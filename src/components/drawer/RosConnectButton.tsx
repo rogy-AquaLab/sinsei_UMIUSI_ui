@@ -11,7 +11,7 @@ const RosConnectButton = () => {
   switch (connectionState) {
     case 'disconnected':
       handleClick = connect
-      label = 'Connect to rosbridge'
+      label = 'Connect to ROS'
       tone = 'text-primary'
       break
     case 'connecting':
@@ -31,7 +31,7 @@ const RosConnectButton = () => {
       break
     case 'connected':
       handleClick = disconnect
-      label = 'Disconnect from rosbridge'
+      label = 'Disconnect from ROS'
       tone = 'text-error'
       break
   }
