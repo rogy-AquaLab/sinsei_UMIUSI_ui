@@ -1,48 +1,92 @@
-import { useState } from 'react'
-import { FaExchangeAlt, FaThLarge, FaVideo } from 'react-icons/fa'
+import { useEffect, useRef, useState } from 'react'
+import { FaThLarge, FaVideo } from 'react-icons/fa'
 import WebRtcVideo from '@/components/camera/WebRtcVideo'
 import { CAMERA_STREAMS, type CameraId } from '@/stores/cameraStreamStore'
 
 type ViewMode = CameraId | 'dual'
 
+const VIDEO_ASPECT_RATIO = 16 / 9
+const DUAL_VIEW_GAP = 4
+
 const CameraViewer = () => {
+  const containerRef = useRef<HTMLDivElement>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('dual')
-  const [primaryCamera, setPrimaryCamera] = useState<CameraId>('front')
+  const [containerSize, setContainerSize] = useState<{
+    width: number
+    height: number
+  } | null>(null)
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return
+      setContainerSize({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      })
+    })
+    observer.observe(container)
+
+    return () => observer.disconnect()
+  }, [])
+
+  const horizontalVideoWidth = containerSize
+    ? Math.min(
+        Math.max(0, containerSize.width - DUAL_VIEW_GAP) / 2,
+        containerSize.height * VIDEO_ASPECT_RATIO,
+      )
+    : 0
+  const verticalVideoWidth = containerSize
+    ? Math.min(
+        containerSize.width,
+        (Math.max(0, containerSize.height - DUAL_VIEW_GAP) / 2) *
+          VIDEO_ASPECT_RATIO,
+      )
+    : 0
+  const useHorizontalLayout = horizontalVideoWidth >= verticalVideoWidth
+  const dualVideoWidth = useHorizontalLayout
+    ? horizontalVideoWidth
+    : verticalVideoWidth
 
   const isVisible = (id: CameraId) => viewMode === 'dual' || viewMode === id
-  const isPrimary = (id: CameraId) =>
-    viewMode === id || (viewMode === 'dual' && primaryCamera === id)
 
   return (
-    <div className="relative h-full w-full bg-black">
-      {CAMERA_STREAMS.map((camera) => {
-        const visible = isVisible(camera.id)
-        const primary = isPrimary(camera.id)
-        return (
-          <div
-            key={camera.id}
-            className={
-              !visible
-                ? 'hidden'
-                : primary
-                  ? 'absolute inset-0'
-                  : 'absolute bottom-4 right-4 z-20 aspect-video w-72 max-w-[42%] overflow-hidden rounded-lg border border-white/30 shadow-2xl'
-            }
-          >
-            {visible && (
-              <WebRtcVideo cameraId={camera.id} label={camera.label} />
-            )}
-            {visible && !primary && (
-              <button
-                type="button"
-                className="absolute inset-0 z-10 cursor-pointer"
-                aria-label={`Show ${camera.label} as main view`}
-                onClick={() => setPrimaryCamera(camera.id)}
-              />
-            )}
-          </div>
-        )
-      })}
+    <div ref={containerRef} className="relative h-full w-full bg-black">
+      <div
+        className={`absolute inset-0 flex items-center justify-center gap-1 ${
+          viewMode === 'dual' && !useHorizontalLayout ? 'flex-col' : 'flex-row'
+        }`}
+      >
+        {CAMERA_STREAMS.map((camera) => {
+          const visible = isVisible(camera.id)
+          return (
+            <div
+              key={camera.id}
+              className={
+                !visible
+                  ? 'hidden'
+                  : viewMode === 'dual'
+                    ? 'relative shrink-0 overflow-hidden bg-black'
+                    : 'absolute inset-0'
+              }
+              style={
+                viewMode === 'dual' && containerSize
+                  ? {
+                      width: `${dualVideoWidth}px`,
+                      height: `${dualVideoWidth / VIDEO_ASPECT_RATIO}px`,
+                    }
+                  : undefined
+              }
+            >
+              {visible && (
+                <WebRtcVideo cameraId={camera.id} label={camera.label} />
+              )}
+            </div>
+          )
+        })}
+      </div>
 
       <div className="absolute left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-1 rounded-lg bg-black/65 p-1 text-white shadow-lg">
         <button
@@ -72,20 +116,6 @@ const CameraViewer = () => {
           <FaThLarge />
           Dual
         </button>
-        {viewMode === 'dual' && (
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm btn-square text-white"
-            aria-label="Swap camera views"
-            onClick={() =>
-              setPrimaryCamera((current) =>
-                current === 'front' ? 'down' : 'front',
-              )
-            }
-          >
-            <FaExchangeAlt />
-          </button>
-        )}
       </div>
     </div>
   )
