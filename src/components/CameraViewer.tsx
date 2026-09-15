@@ -53,7 +53,11 @@ const CameraViewer = () => {
   const isVisible = (id: CameraId) => viewMode === 'dual' || viewMode === id
 
   return (
-    <div ref={containerRef} className="relative h-full w-full bg-black">
+    <div
+      ref={containerRef}
+      className="relative h-full w-full bg-base-300"
+      data-theme="dark"
+    >
       <div
         className={`absolute inset-0 flex items-center justify-center gap-1 ${
           viewMode === 'dual' && !useHorizontalLayout ? 'flex-col' : 'flex-row'
@@ -88,11 +92,16 @@ const CameraViewer = () => {
         })}
       </div>
 
-      <div className="absolute left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-1 rounded-lg bg-black/65 p-1 text-white shadow-lg">
+      <div
+        role="tablist"
+        className="tabs tabs-box tabs-sm absolute left-1/2 top-4 z-30 -translate-x-1/2 bg-base-200/85 shadow-lg backdrop-blur-sm"
+        aria-label="Camera view"
+      >
         <button
           type="button"
-          className={`btn btn-sm border-none ${viewMode === 'front' ? 'btn-primary' : 'btn-ghost text-white'}`}
-          aria-pressed={viewMode === 'front'}
+          role="tab"
+          className={`tab gap-2 ${viewMode === 'front' ? 'tab-active' : ''}`}
+          aria-selected={viewMode === 'front'}
           onClick={() => setViewMode('front')}
         >
           <FaVideo />
@@ -100,8 +109,9 @@ const CameraViewer = () => {
         </button>
         <button
           type="button"
-          className={`btn btn-sm border-none ${viewMode === 'down' ? 'btn-primary' : 'btn-ghost text-white'}`}
-          aria-pressed={viewMode === 'down'}
+          role="tab"
+          className={`tab gap-2 ${viewMode === 'down' ? 'tab-active' : ''}`}
+          aria-selected={viewMode === 'down'}
           onClick={() => setViewMode('down')}
         >
           <FaVideo />
@@ -109,8 +119,9 @@ const CameraViewer = () => {
         </button>
         <button
           type="button"
-          className={`btn btn-sm border-none ${viewMode === 'dual' ? 'btn-primary' : 'btn-ghost text-white'}`}
-          aria-pressed={viewMode === 'dual'}
+          role="tab"
+          className={`tab gap-2 ${viewMode === 'dual' ? 'tab-active' : ''}`}
+          aria-selected={viewMode === 'dual'}
           onClick={() => setViewMode('dual')}
         >
           <FaThLarge />
