@@ -1,11 +1,11 @@
 import type { RobotModeNum } from '@/msgs/utils/RobotMode'
 
-export type PowerOnResponce = {
+export type PowerOnResponse = {
   success: boolean
   error_msg: string
 }
 
-export type PowerOffResponce = {
+export type PowerOffResponse = {
   success: boolean
   error_msg: string
 }

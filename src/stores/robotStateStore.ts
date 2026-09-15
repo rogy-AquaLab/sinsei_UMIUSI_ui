@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import type { RobotState } from '@/msgs/OriginalMsgs'
 import type {
-  PowerOffResponce,
-  PowerOnResponce,
+  PowerOffResponse,
+  PowerOnResponse,
   SetModeRequest,
   SetModeResponse,
 } from '@/msgs/OriginalServices'
@@ -154,7 +154,7 @@ export const useRobotStateStore = create<RobotStateStore>((set, get) => ({
     }
 
     const serviceOptions = on ? POWER_ON_SERVICE : POWER_OFF_SERVICE
-    const serviceCall = session.call<null, PowerOnResponce | PowerOffResponce>(
+    const serviceCall = session.call<null, PowerOnResponse | PowerOffResponse>(
       serviceOptions,
       null,
     )
