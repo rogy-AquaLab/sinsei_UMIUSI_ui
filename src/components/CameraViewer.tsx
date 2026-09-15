@@ -1,96 +1,37 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { FaThLarge, FaVideo } from 'react-icons/fa'
 import WebRtcVideo from '@/components/camera/WebRtcVideo'
 import { CAMERA_STREAMS, type CameraId } from '@/stores/cameraStreamStore'
 
 type ViewMode = CameraId | 'dual'
 
-const VIDEO_ASPECT_RATIO = 16 / 9
-const DUAL_VIEW_GAP = 4
-
 const CameraViewer = () => {
-  const containerRef = useRef<HTMLDivElement>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('dual')
-  const [containerSize, setContainerSize] = useState<{
-    width: number
-    height: number
-  } | null>(null)
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const observer = new ResizeObserver(([entry]) => {
-      if (!entry) return
-      setContainerSize({
-        width: entry.contentRect.width,
-        height: entry.contentRect.height,
-      })
-    })
-    observer.observe(container)
-
-    return () => observer.disconnect()
-  }, [])
-
-  const horizontalVideoWidth = containerSize
-    ? Math.min(
-        Math.max(0, containerSize.width - DUAL_VIEW_GAP) / 2,
-        containerSize.height * VIDEO_ASPECT_RATIO,
-      )
-    : 0
-  const verticalVideoWidth = containerSize
-    ? Math.min(
-        containerSize.width,
-        (Math.max(0, containerSize.height - DUAL_VIEW_GAP) / 2) *
-          VIDEO_ASPECT_RATIO,
-      )
-    : 0
-  const useHorizontalLayout = horizontalVideoWidth >= verticalVideoWidth
-  const dualVideoWidth = useHorizontalLayout
-    ? horizontalVideoWidth
-    : verticalVideoWidth
 
   const isVisible = (id: CameraId) => viewMode === 'dual' || viewMode === id
 
   return (
-    <div
-      ref={containerRef}
-      className="relative h-full w-full bg-base-300"
-      data-theme="dark"
-    >
-      <div
-        className={`absolute inset-0 flex items-center justify-center gap-1 ${
-          viewMode === 'dual' && !useHorizontalLayout ? 'flex-col' : 'flex-row'
-        }`}
-      >
-        {CAMERA_STREAMS.map((camera) => {
-          const visible = isVisible(camera.id)
-          return (
-            <div
-              key={camera.id}
-              className={
-                !visible
-                  ? 'hidden'
-                  : viewMode === 'dual'
-                    ? 'relative shrink-0 overflow-hidden bg-black'
-                    : 'absolute inset-0'
-              }
-              style={
-                viewMode === 'dual' && containerSize
-                  ? {
-                      width: `${dualVideoWidth}px`,
-                      height: `${dualVideoWidth / VIDEO_ASPECT_RATIO}px`,
-                    }
-                  : undefined
-              }
-            >
-              {visible && (
-                <WebRtcVideo cameraId={camera.id} label={camera.label} />
-              )}
-            </div>
-          )
-        })}
-      </div>
+    <div className="relative h-full w-full bg-base-300" data-theme="dark">
+      {CAMERA_STREAMS.map((camera) => {
+        const visible = isVisible(camera.id)
+        const isDownPreview = viewMode === 'dual' && camera.id === 'down'
+        return (
+          <div
+            key={camera.id}
+            className={
+              !visible
+                ? 'hidden'
+                : isDownPreview
+                  ? 'absolute bottom-4 right-4 z-20 aspect-video w-[clamp(13.75rem,28%,22.5rem)] max-w-[calc(100%-2rem)] overflow-hidden rounded-xl border border-base-300 bg-black shadow-2xl'
+                  : 'absolute inset-0'
+            }
+          >
+            {visible && (
+              <WebRtcVideo cameraId={camera.id} label={camera.label} />
+            )}
+          </div>
+        )
+      })}
 
       <div
         role="tablist"
