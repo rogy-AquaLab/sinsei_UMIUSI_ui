@@ -4,38 +4,31 @@ import {
   FaQuestionCircle,
   FaRobot,
 } from 'react-icons/fa'
+import StatusIcon from '@/components/navbar/StatusIcon'
 import { robotModeToString } from '@/msgs/utils/RobotMode'
 import { useRobotStateStore } from '@/stores/robotStateStore'
 
 const ModeIcon = () => {
   const mode = useRobotStateStore((state) => state.mode)
 
-  const tone =
+  const tone = mode === null || mode === 'POWERED_OFF' ? 'muted' : 'info'
+  const Icon =
     mode === null
-      ? 'text-base-content/30'
-      : mode === 'POWERED_OFF'
-        ? 'text-error'
-        : 'text-primary'
+      ? FaQuestionCircle
+      : mode === 'POWERED_OFF' || mode === 'STANDBY'
+        ? FaPauseCircle
+        : mode === 'MANUAL'
+          ? FaHandPaper
+          : mode === 'AUTO'
+            ? FaRobot
+            : FaQuestionCircle
 
   return (
-    <div
-      className={`tooltip tooltip-bottom text-2xl ${tone}`}
-      data-tip={`${mode ? robotModeToString(mode) : 'Unknown'} Mode`}
-    >
-      {mode === null ? (
-        <FaQuestionCircle />
-      ) : mode === 'POWERED_OFF' ? (
-        <FaPauseCircle />
-      ) : mode === 'STANDBY' ? (
-        <FaPauseCircle />
-      ) : mode === 'MANUAL' ? (
-        <FaHandPaper />
-      ) : mode === 'AUTO' ? (
-        <FaRobot />
-      ) : (
-        <FaQuestionCircle />
-      )}
-    </div>
+    <StatusIcon
+      icon={Icon}
+      label={`${mode ? robotModeToString(mode) : 'Unknown'} Mode`}
+      tone={tone}
+    />
   )
 }
 

@@ -1,4 +1,5 @@
 import { FaHeartbeat } from 'react-icons/fa'
+import StatusIcon, { type StatusIconTone } from '@/components/navbar/StatusIcon'
 import { useHealthStore } from '@/stores/healthStore'
 import { useRosStore } from '@/stores/rosStore'
 import { useThrusterStateStore } from '@/stores/thrusterStateStore'
@@ -10,51 +11,44 @@ const SystemStatusIcon = () => {
     (state) => state.telemetryStatus,
   )
 
-  const config =
+  const config: { label: string; tone: StatusIconTone } =
     connectionState !== 'connected'
       ? {
           label: 'System status unavailable',
-          tone: 'text-base-content/30',
+          tone: 'muted',
         }
       : overallStatus === 'error'
         ? {
             label: 'Health check failed',
-            tone: 'text-error',
+            tone: 'error',
           }
         : overallStatus === 'stale'
           ? {
               label: 'Health data outdated',
-              tone: 'text-warning',
+              tone: 'warning',
             }
           : overallStatus === 'unknown'
             ? {
                 label: 'Health status unknown',
-                tone: 'text-warning',
+                tone: 'warning',
               }
             : telemetryStatus === 'stale'
               ? {
                   label: 'Thruster telemetry outdated',
-                  tone: 'text-warning',
+                  tone: 'warning',
                 }
               : telemetryStatus === 'unknown'
                 ? {
                     label: 'Thruster telemetry unavailable',
-                    tone: 'text-warning',
+                    tone: 'warning',
                   }
                 : {
                     label: 'System status normal',
-                    tone: 'text-success',
+                    tone: 'success',
                   }
 
   return (
-    <div
-      className={`tooltip tooltip-bottom text-2xl ${config.tone}`}
-      data-tip={config.label}
-      role="img"
-      aria-label={config.label}
-    >
-      <FaHeartbeat />
-    </div>
+    <StatusIcon icon={FaHeartbeat} label={config.label} tone={config.tone} />
   )
 }
 

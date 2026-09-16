@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FaThLarge, FaVideo } from 'react-icons/fa'
+import { FaCamera, FaThLarge } from 'react-icons/fa'
 import WebRtcVideo from '@/components/camera/WebRtcVideo'
 import { CAMERA_STREAMS, type CameraId } from '@/stores/cameraStreamStore'
 
@@ -45,7 +45,7 @@ const CameraViewer = () => {
           aria-selected={viewMode === 'front'}
           onClick={() => setViewMode('front')}
         >
-          <FaVideo />
+          <FaCamera />
           Front
         </button>
         <button
@@ -55,7 +55,7 @@ const CameraViewer = () => {
           aria-selected={viewMode === 'down'}
           onClick={() => setViewMode('down')}
         >
-          <FaVideo />
+          <FaCamera />
           Down
         </button>
         <button
