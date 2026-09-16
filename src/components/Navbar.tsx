@@ -30,10 +30,10 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
       </div>
       <div className="navbar-end">
         <div className="flex items-center gap-5">
-          <GamepadStatusIcon />
           <ModeIcon />
-          <CameraStatusIcon />
           <SystemStatusIcon />
+          <GamepadStatusIcon />
+          <CameraStatusIcon />
           <RosConnectionStatusIcon />
           <label
             htmlFor="my-drawer"
