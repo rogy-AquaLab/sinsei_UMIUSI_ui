@@ -1,4 +1,5 @@
 import { FaAngleLeft } from 'react-icons/fa'
+import CameraStatusIcon from '@/components/navbar/CameraStatusIcon'
 import GamepadStatusIcon from '@/components/navbar/GamepadStatusIcon'
 import MainTabs from '@/components/navbar/MainTabs'
 import ModeIcon from '@/components/navbar/ModeIcon'
@@ -29,9 +30,10 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
       </div>
       <div className="navbar-end">
         <div className="flex items-center gap-5">
-          <GamepadStatusIcon />
           <ModeIcon />
           <SystemStatusIcon />
+          <GamepadStatusIcon />
+          <CameraStatusIcon />
           <RosConnectionStatusIcon />
           <label
             htmlFor="my-drawer"

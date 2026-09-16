@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { FaExclamationTriangle } from 'react-icons/fa'
+import { FaExclamationTriangle, FaRedoAlt } from 'react-icons/fa'
 import { type CameraId, useCameraStreamStore } from '@/stores/cameraStreamStore'
 
 type Props = {
@@ -64,6 +64,7 @@ const WebRtcVideo = ({ cameraId, label }: Props) => {
                 className="btn btn-sm"
                 onClick={() => retry(cameraId)}
               >
+                <FaRedoAlt />
                 Retry
               </button>
             </>
