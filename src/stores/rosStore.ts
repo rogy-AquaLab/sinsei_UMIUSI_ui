@@ -136,4 +136,8 @@ const disposeRosStore = () => {
   session?.close()
 }
 
-export const initializeRosStore = () => disposeRosStore
+export const initializeRosStore = () => {
+  // 初回に一度だけ自動接続する
+  useRosStore.getState().connect()
+  return disposeRosStore
+}
