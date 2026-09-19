@@ -1,9 +1,20 @@
 import type * as GeometryMsgs from '@/msgs/GeometryMsgs'
+import type * as StdMsgs from '@/msgs/StdMsgs'
 import type { RobotModeNum } from '@/msgs/utils/RobotMode'
 
 export type Target = {
   velocity: GeometryMsgs.Vector3
-  orientation: GeometryMsgs.Vector3
+}
+
+/**
+ * Roll/pitchは絶対姿勢(quaternion)、yawはレートで指定する
+ */
+export type AttitudeTarget = {
+  header?: StdMsgs.Header
+  /** 目標roll/pitch姿勢。yaw成分は0であること */
+  attitude: GeometryMsgs.Quaternion
+  /** [rad/s] */
+  yaw_rate: number
 }
 
 export type RobotState = {

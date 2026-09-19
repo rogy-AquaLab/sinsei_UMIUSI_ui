@@ -9,3 +9,8 @@ export type ColorRGBA = {
   b: number
   a: number
 }
+
+export type Header = {
+  stamp: Time
+  frame_id: string
+}
