@@ -59,8 +59,13 @@ const getModeConfig = (mode: number | undefined) =>
 const formatDutyCycle = (thruster: ThrusterState | undefined) =>
   thruster ? `${(thruster.duty_cycle * 100).toFixed(1)}%` : '--'
 
-const formatAngle = (thruster: ThrusterState | undefined) =>
-  thruster ? `${((thruster.angle * 180) / Math.PI).toFixed(1)}°` : '--'
+const formatCommandedAngle = (thruster: ThrusterState | undefined) =>
+  thruster ? `${((thruster.commanded_angle * 180) / Math.PI).toFixed(1)}°` : '--'
+
+const formatEstimatedAngle = (thruster: ThrusterState | undefined) =>
+  thruster?.estimated_angle_available
+    ? `${((thruster.estimated_angle * 180) / Math.PI).toFixed(1)}°`
+    : '--'
 
 const formatRpm = (thruster: ThrusterState | undefined) =>
   thruster ? Math.round(thruster.rpm).toLocaleString() : '--'
@@ -112,7 +117,8 @@ const ThrusterPanel = () => {
               <th>ESC</th>
               <th>Servo</th>
               <th className="text-right">Duty</th>
-              <th className="text-right">Angle</th>
+              <th className="text-right">Commanded</th>
+              <th className="text-right">Estimated</th>
               <th className="text-right">RPM</th>
             </tr>
           </thead>
@@ -151,7 +157,10 @@ const ThrusterPanel = () => {
                     {isFresh ? formatDutyCycle(thruster) : '--'}
                   </td>
                   <td className="text-right font-mono">
-                    {isFresh ? formatAngle(thruster) : '--'}
+                    {isFresh ? formatCommandedAngle(thruster) : '--'}
+                  </td>
+                  <td className="text-right font-mono">
+                    {isFresh ? formatEstimatedAngle(thruster) : '--'}
                   </td>
                   <td className="text-right font-mono">
                     {isFresh ? formatRpm(thruster) : '--'}

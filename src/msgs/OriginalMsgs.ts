@@ -66,7 +66,11 @@ export const THRUSTER_MODE = {
 export type ThrusterState = {
   mode: ThrusterMode
   duty_cycle: number
-  angle: number
+  /** [rad] */
+  commanded_angle: number
+  estimated_angle_available: boolean
+  /** [rad], NaN when unavailable */
+  estimated_angle: number
   rpm: number
 }
 
