@@ -89,7 +89,7 @@ export const initializeGamepadPublisher = ({
   let targetPublisher: Publisher<Msgs.Target> | null = null
   let attitudeTargetPublisher: Publisher<Msgs.AttitudeTarget> | null = null
   let intervalId: number | null = null
-  // R1 で方位保持をトグルする。押しっぱなしで切り替わり続けないよう立ち上がりだけ見る
+  // R1 の立ち上がりで方位保持をトグルする
   let holdYaw = false
   let holdButtonWasPressed = false
 
@@ -116,7 +116,6 @@ export const initializeGamepadPublisher = ({
   }
 
   const stopPublishing = () => {
-    // 接続し直したときに前回の保持を黙って持ち越さない
     holdYaw = false
     holdButtonWasPressed = false
     if (intervalId !== null) {
