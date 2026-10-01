@@ -3,6 +3,7 @@ import type * as Msgs from '@/msgs/OriginalMsgs'
 import { mapGamepad } from '@/services/gamepad/gamepadMapping'
 import type { Publisher } from '@/services/rosSession'
 import { getLatestGamepadByIndex, useGamepadStore } from '@/stores/gamepadStore'
+import { useNotificationStore } from '@/stores/notificationStore'
 import { useRosStore } from '@/stores/rosStore'
 
 type GamepadPublisherOptions = {
@@ -62,7 +63,10 @@ const createTargetMessage = (gamepad: Gamepad): Msgs.Target => {
   }
 }
 
-const createAttitudeTargetMessage = (gamepad: Gamepad): Msgs.AttitudeTarget => {
+const createAttitudeTargetMessage = (
+  gamepad: Gamepad,
+  holdYaw: boolean,
+): Msgs.AttitudeTarget => {
   const { axes } = mapGamepad(gamepad)
 
   const roll = MAX_ROLL * deadzone(axes.r.x)
@@ -72,6 +76,7 @@ const createAttitudeTargetMessage = (gamepad: Gamepad): Msgs.AttitudeTarget => {
   return {
     attitude: rollPitchToQuaternion(roll, pitch),
     yaw_rate: yawRate,
+    hold_yaw: holdYaw,
   }
 }
 
@@ -84,6 +89,9 @@ export const initializeGamepadPublisher = ({
   let targetPublisher: Publisher<Msgs.Target> | null = null
   let attitudeTargetPublisher: Publisher<Msgs.AttitudeTarget> | null = null
   let intervalId: number | null = null
+  // R1 で方位保持をトグルする。押しっぱなしで切り替わり続けないよう立ち上がりだけ見る
+  let holdYaw = false
+  let holdButtonWasPressed = false
 
   const publish = () => {
     if (!targetPublisher || !attitudeTargetPublisher) return
@@ -94,11 +102,23 @@ export const initializeGamepadPublisher = ({
     const gamepad = getLatestGamepadByIndex(selectedIndex)
     if (!gamepad) return
 
+    const holdButtonPressed = mapGamepad(gamepad).buttons.r1.pressed
+    if (holdButtonPressed && !holdButtonWasPressed) {
+      holdYaw = !holdYaw
+      useNotificationStore
+        .getState()
+        .notify(`方位保持: ${holdYaw ? 'ON' : 'OFF'}`, 'info')
+    }
+    holdButtonWasPressed = holdButtonPressed
+
     targetPublisher.publish(createTargetMessage(gamepad))
-    attitudeTargetPublisher.publish(createAttitudeTargetMessage(gamepad))
+    attitudeTargetPublisher.publish(createAttitudeTargetMessage(gamepad, holdYaw))
   }
 
   const stopPublishing = () => {
+    // 接続し直したときに前回の保持を黙って持ち越さない
+    holdYaw = false
+    holdButtonWasPressed = false
     if (intervalId !== null) {
       window.clearInterval(intervalId)
       intervalId = null

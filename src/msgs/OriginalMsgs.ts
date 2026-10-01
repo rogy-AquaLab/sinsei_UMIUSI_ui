@@ -15,6 +15,11 @@ export type AttitudeTarget = {
   attitude: GeometryMsgs.Quaternion
   /** [rad/s] */
   yaw_rate: number
+  /**
+   * true の間、false -> true の瞬間の方位を保持する。yaw_rate はその保持方位を回す。
+   * 省略時 (rosbridge が false で埋める) は従来どおりのレート制御
+   */
+  hold_yaw?: boolean
 }
 
 export type RobotState = {
