@@ -15,6 +15,8 @@ export type AttitudeTarget = {
   attitude: GeometryMsgs.Quaternion
   /** [rad/s] */
   yaw_rate: number
+  /** 方位保持。規約は sinsei_umiusi_msgs の AttitudeTarget.msg */
+  hold_yaw?: boolean
 }
 
 export type RobotState = {
