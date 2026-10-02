@@ -2,6 +2,7 @@ import type * as GeometryMsgs from '@/msgs/GeometryMsgs'
 import type * as Msgs from '@/msgs/OriginalMsgs'
 import { mapGamepad } from '@/services/gamepad/gamepadMapping'
 import type { Publisher } from '@/services/rosSession'
+import { useAttitudeTargetStore } from '@/stores/attitudeTargetStore'
 import { getLatestGamepadByIndex, useGamepadStore } from '@/stores/gamepadStore'
 import { useNotificationStore } from '@/stores/notificationStore'
 import { useRosStore } from '@/stores/rosStore'
@@ -105,9 +106,15 @@ export const initializeGamepadPublisher = ({
     const holdButtonPressed = mapGamepad(gamepad).buttons.r1.pressed
     if (holdButtonPressed && !holdButtonWasPressed) {
       holdYaw = !holdYaw
+      const ffMode = useAttitudeTargetStore.getState().controlMode === 'ff'
       useNotificationStore
         .getState()
-        .notify(`方位保持: ${holdYaw ? 'ON' : 'OFF'}`, 'info')
+        .notify(
+          holdYaw && ffMode
+            ? '方位保持: ON (ff モードなので効かない)'
+            : `方位保持: ${holdYaw ? 'ON' : 'OFF'}`,
+          holdYaw && ffMode ? 'warning' : 'info',
+        )
     }
     holdButtonWasPressed = holdButtonPressed
 

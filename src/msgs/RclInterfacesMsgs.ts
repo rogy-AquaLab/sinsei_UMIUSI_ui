@@ -29,3 +29,24 @@ export type RclLog = {
   function: string // Function in the source file.
   line: number // Line number in the source file.
 }
+
+/**
+ * rcl_interfaces/msg/ParameterValue (使うフィールドだけ)
+ */
+export type RclParameterValue = {
+  type: number
+  bool_value: boolean
+  integer_value: number
+  double_value: number
+  string_value: string
+}
+
+/**
+ * rcl_interfaces/srv/GetParameters
+ */
+export type GetParametersRequest = {
+  names: string[]
+}
+export type GetParametersResponse = {
+  values: RclParameterValue[]
+}
