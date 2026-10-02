@@ -12,9 +12,7 @@ const HoldYawIcon = () => {
     )
   }
   if (!holdYaw) {
-    return (
-      <StatusIcon icon={FaCompass} label="方位保持: OFF" tone="muted" />
-    )
+    return <StatusIcon icon={FaCompass} label="方位保持: OFF" tone="muted" />
   }
   if (controlMode === 'ff') {
     return (

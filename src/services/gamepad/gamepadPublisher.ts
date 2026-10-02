@@ -119,7 +119,9 @@ export const initializeGamepadPublisher = ({
     holdButtonWasPressed = holdButtonPressed
 
     targetPublisher.publish(createTargetMessage(gamepad))
-    attitudeTargetPublisher.publish(createAttitudeTargetMessage(gamepad, holdYaw))
+    attitudeTargetPublisher.publish(
+      createAttitudeTargetMessage(gamepad, holdYaw),
+    )
   }
 
   const stopPublishing = () => {
