@@ -42,6 +42,8 @@ export const useAttitudeTargetStore = create<AttitudeTargetStore>(
 
 let receivedAt: number | null = null
 let disposeSubscription: (() => void) | null = null
+// 呼び出しにタイムアウトが無いので、control が居なくて返らない間は次を出さない (溜まり続ける)
+let controlModeRequestPending = false
 
 const reset = () => {
   receivedAt = null
@@ -58,7 +60,9 @@ const refreshStale = () => {
 const fetchControlMode = () => {
   const { session, connectionState } = useRosStore.getState()
   if (!session || connectionState !== 'connected') return
+  if (controlModeRequestPending) return
 
+  controlModeRequestPending = true
   void session
     .call<GetParametersRequest, GetParametersResponse>(
       GET_ATTITUDE_CONTROLLER_PARAMS,
@@ -71,6 +75,9 @@ const fetchControlMode = () => {
       })
     })
     .catch(() => useAttitudeTargetStore.setState({ controlMode: null }))
+    .finally(() => {
+      controlModeRequestPending = false
+    })
 }
 
 const syncSubscription = () => {
