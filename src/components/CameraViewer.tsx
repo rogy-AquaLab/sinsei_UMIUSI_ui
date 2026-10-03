@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { FaCamera, FaThLarge } from 'react-icons/fa'
+import DetectionOverlay from '@/components/camera/DetectionOverlay'
 import WebRtcVideo from '@/components/camera/WebRtcVideo'
 import { CAMERA_STREAMS, type CameraId } from '@/stores/cameraStreamStore'
 
@@ -32,6 +33,8 @@ const CameraViewer = () => {
           </div>
         )
       })}
+
+      {isVisible('front') && <DetectionOverlay />}
 
       <div
         role="tablist"
