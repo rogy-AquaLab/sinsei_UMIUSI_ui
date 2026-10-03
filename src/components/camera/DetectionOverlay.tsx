@@ -1,5 +1,6 @@
 import type { BalloonDetection } from '@/msgs/AutonomyMsgs'
 import { useDetectionStore } from '@/stores/detectionStore'
+import { useRobotStateStore } from '@/stores/robotStateStore'
 
 const COLOUR_LABELS: Record<string, { label: string; className: string }> = {
   red: { label: '赤', className: 'text-error' },
@@ -36,15 +37,23 @@ const DetectionOverlay = () => {
   const status = useDetectionStore((state) => state.status)
   const detections = useDetectionStore((state) => state.detections)
   const rateHz = useDetectionStore((state) => state.rateHz)
+  const mode = useRobotStateStore((state) => state.mode)
 
   const rate = rateHz === null ? '' : ` (${rateHz.toFixed(1)} Hz)`
+  // perception は AUTO の間しか推論しない (autonomy infer_only_in_auto)。AUTO 以外で届かないのは正常。
+  // mode が null (core なし) のときは従来どおり。infer_only_in_auto:=false で届いていればそのまま出す
+  const pausedOutsideAuto =
+    status !== 'live' && mode !== null && mode !== 'AUTO'
 
   return (
     <div className="absolute left-4 top-4 z-30 max-w-[calc(100%-2rem)] rounded-lg bg-base-200/85 px-3 py-2 text-sm shadow-lg backdrop-blur-sm">
-      {status === 'never' && (
+      {pausedOutsideAuto && (
+        <span className="text-base-content/60">認識: AUTO 以外は停止中</span>
+      )}
+      {!pausedOutsideAuto && status === 'never' && (
         <span className="text-base-content/60">認識: 未受信</span>
       )}
-      {status === 'stale' && (
+      {!pausedOutsideAuto && status === 'stale' && (
         <span className="font-bold text-warning">
           認識: 停止 (1 秒以上届いていない)
         </span>
