@@ -88,6 +88,25 @@ const AutoStatusPanel = () => {
             旋回 {yawText(status.cmd.yaw_rate)}
             {status.cmd.hold_yaw ? ' / 方位保持' : ''}
           </div>
+          {status.config && (
+            <div className="text-xs">
+              色の設定:{' '}
+              {status.config.fallback ? (
+                <span className="font-bold text-warning">
+                  {status.config.file}（予備。色合わせの結果を読んでいない）
+                </span>
+              ) : (
+                <span>
+                  {status.config.file}（
+                  {new Date(status.config.loaded_at * 1000).toLocaleTimeString(
+                    'ja-JP',
+                    { hour: '2-digit', minute: '2-digit', second: '2-digit' },
+                  )}{' '}
+                  に読み込み）
+                </span>
+              )}
+            </div>
+          )}
           <div className="text-xs">
             認識: {detections.length} 個
             {frameRateHz === null ? (

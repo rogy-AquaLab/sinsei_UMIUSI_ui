@@ -41,5 +41,14 @@ export type AutoStatus = {
   cmd: AutoCommand
   /** この周期で新しいフレームを処理したか。false のとき detections は空 */
   new_frame: boolean
+  /** 今使っている色の設定（古い core には無い） */
+  config?: {
+    /** 読んだファイル名（例: current.json） */
+    file: string
+    /** 読んだ時刻 [s, UNIX] */
+    loaded_at: number
+    /** current.json を読めず、同梱の設定で動いている */
+    fallback: boolean
+  }
   detections: AutoDetection[]
 }
