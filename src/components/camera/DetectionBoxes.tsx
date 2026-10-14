@@ -22,6 +22,8 @@ const DetectionBoxes = ({ width, height }: VideoContentSize) => {
   const detections = useAutoStatusStore((state) => state.detections)
   const target = useAutoStatusStore((state) => state.status?.target ?? null)
   const live = useAutoStatusStore((state) => state.link === 'live')
+  // CNN のときは確信度も出す（しきい値 cnn_conf の近くでちらつくものを見分ける）
+  const cnn = useAutoStatusStore((state) => state.status?.detector === 'cnn')
   if (!live) return null
 
   const cx = width / 2
@@ -89,6 +91,7 @@ const DetectionBoxes = ({ width, height }: VideoContentSize) => {
               paintOrder="stroke"
             >
               {LABEL[d.color] ?? d.color}
+              {cnn && d.s !== undefined ? ` ${d.s.toFixed(2)}` : ''}
               {isTarget ? ' ◎' : ''}
             </text>
           </g>

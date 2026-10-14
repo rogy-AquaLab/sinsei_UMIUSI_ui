@@ -22,6 +22,8 @@ export type AutoDetection = {
   y: number
   /** 外接円の半径 / 画像の幅 */
   r: number
+  /** 確信度（CNN の検出だけ意味がある。色の検出は 1。古い core には無い） */
+  s?: number
 }
 
 export type AutoCommand = {
@@ -50,5 +52,9 @@ export type AutoStatus = {
     /** current.json を読めず、同梱の設定で動いている */
     fallback: boolean
   }
+  /** 検出のしかた。'cnn' = 学習した CNN、'hsv' = 色のしきい値（古い core には無い = hsv） */
+  detector?: 'hsv' | 'cnn'
+  /** CNN のモデルのファイル名（detector が cnn のときだけ） */
+  cnn_model?: string | null
   detections: AutoDetection[]
 }
