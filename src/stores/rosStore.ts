@@ -17,11 +17,38 @@ type RosStore = {
   disconnect: () => void
 }
 
+// 切れたら自動でつなぎ直す（水中では無線が切れる。Auto の間も機体は動き続けるので、上がってきたら戻れるように）。
+// 手で切断したときはつなぎ直さない
+const RECONNECT_DELAYS_MS = [1000, 2000, 5000]
+let wantConnected = false
+let reconnectAttempt = 0
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+
+const clearReconnect = () => {
+  if (reconnectTimer !== null) clearTimeout(reconnectTimer)
+  reconnectTimer = null
+}
+
+const scheduleReconnect = (connect: () => void) => {
+  if (!wantConnected || reconnectTimer !== null) return
+  const delay =
+    RECONNECT_DELAYS_MS[
+      Math.min(reconnectAttempt, RECONNECT_DELAYS_MS.length - 1)
+    ]
+  reconnectAttempt += 1
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null
+    connect()
+  }, delay)
+}
+
 export const useRosStore = create<RosStore>((set, get) => ({
   session: null,
   connectionState: 'disconnected',
 
   connect: () => {
+    wantConnected = true
+    clearReconnect()
     const { connectionState } = get()
     if (connectionState !== 'disconnected') {
       console.log('Already connected or connecting; skipping.')
@@ -43,6 +70,7 @@ export const useRosStore = create<RosStore>((set, get) => ({
         }
 
         set({ connectionState: 'connected' })
+        reconnectAttempt = 0
         console.log('Connected to rosbridge server.')
         useNotificationStore
           .getState()
@@ -70,21 +98,28 @@ export const useRosStore = create<RosStore>((set, get) => ({
             break
           case 'connecting':
             console.log('Failed to connect to rosbridge server.')
-            useNotificationStore
-              .getState()
-              .notify('Failed to connect to rosbridge server.', 'error')
+            // つなぎ直しの失敗は毎回は知らせない（届かない間ずっと出続けるため）
+            if (reconnectAttempt === 0) {
+              useNotificationStore
+                .getState()
+                .notify('Failed to connect to rosbridge server.', 'error')
+            }
             break
           case 'connected':
             console.log('Connection to rosbridge server lost.')
             useNotificationStore
               .getState()
-              .notify('Connection to rosbridge server lost.', 'error')
+              .notify(
+                'Connection to rosbridge server lost. Reconnecting...',
+                'error',
+              )
             break
           default:
             break
         }
 
         set({ session: null, connectionState: 'disconnected' })
+        scheduleReconnect(get().connect)
       },
       onError: () => {
         const current = get()
@@ -98,10 +133,13 @@ export const useRosStore = create<RosStore>((set, get) => ({
         }
 
         console.log('Failed to connect to rosbridge server.')
-        useNotificationStore
-          .getState()
-          .notify('Failed to connect to rosbridge server.', 'error')
+        if (reconnectAttempt === 0) {
+          useNotificationStore
+            .getState()
+            .notify('Failed to connect to rosbridge server.', 'error')
+        }
         set({ session: null, connectionState: 'disconnected' })
+        scheduleReconnect(get().connect)
       },
     })
 
@@ -110,6 +148,9 @@ export const useRosStore = create<RosStore>((set, get) => ({
   },
 
   disconnect: () => {
+    wantConnected = false
+    reconnectAttempt = 0
+    clearReconnect()
     const { session, connectionState } = get()
     if (!session) {
       set({ session: null, connectionState: 'disconnected' })
@@ -130,6 +171,8 @@ export const useRosStore = create<RosStore>((set, get) => ({
 }))
 
 const disposeRosStore = () => {
+  wantConnected = false
+  clearReconnect()
   // コンポーネントのアンマウント時に念のためdisconnectする
   const session = useRosStore.getState().session
   useRosStore.setState({ session: null, connectionState: 'disconnected' })
