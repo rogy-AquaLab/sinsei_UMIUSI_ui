@@ -23,7 +23,7 @@ const SET = {
 // 呼び出しにタイムアウトが無いので、ノードが居ないときに待ち続けないよう打ち切る
 const CALL_TIMEOUT_MS = 3_000
 
-type ParamKind = 'double' | 'bool' | 'select'
+type ParamKind = 'double' | 'integer' | 'bool' | 'select'
 type ParamDef = {
   name: string
   label: string
@@ -48,8 +48,55 @@ const DETECTION: readonly ParamDef[] = [
   },
   { name: 'cnn_conf', label: 'CNN の確信度の下限', kind: 'double', step: 0.05 },
   { name: 'preview', label: 'Auto 以外でも認識を表示', kind: 'bool' },
+  {
+    name: 'cnn_threads',
+    label: 'CNN の推論スレッド数',
+    kind: 'integer',
+    step: 1,
+  },
 ]
 const MISSION: readonly ParamDef[] = [
+  {
+    name: 'use_hold_yaw',
+    label: '方位保持（hold_yaw、fb でだけ効く）',
+    kind: 'bool',
+  },
+  {
+    name: 'mission.aim_x',
+    label: '照準 x（針の位置、右が +）',
+    kind: 'double',
+    step: 0.05,
+  },
+  {
+    name: 'mission.aim_y',
+    label: '照準 y（針の位置、下が +）',
+    kind: 'double',
+    step: 0.05,
+  },
+  {
+    name: 'mission.ram_tol',
+    label: '突進を始める照準のずれ',
+    kind: 'double',
+    step: 0.05,
+  },
+  {
+    name: 'mission.k_yaw',
+    label: '横ずれ → 旋回のゲイン',
+    kind: 'double',
+    step: 0.1,
+  },
+  {
+    name: 'mission.k_heave',
+    label: '縦ずれ → 上下のゲイン',
+    kind: 'double',
+    step: 0.1,
+  },
+  {
+    name: 'mission.near_radius',
+    label: '減速する大きさ（半径/幅）',
+    kind: 'double',
+    step: 0.01,
+  },
   {
     name: 'mission.start_delay',
     label: '動き出すまで [s]',
@@ -150,6 +197,7 @@ const fromRcl = (
 ): Value | undefined => {
   if (!v || v.type === 0) return undefined
   if (def.kind === 'bool') return v.bool_value
+  if (def.kind === 'integer') return v.integer_value
   if (def.kind === 'double')
     return v.type === RCL_PARAMETER_TYPE.integer
       ? v.integer_value
@@ -161,6 +209,11 @@ const toRcl = (def: ParamDef, value: Value) => {
   if (def.kind === 'bool')
     return { type: RCL_PARAMETER_TYPE.bool, bool_value: Boolean(value) }
   // yaml で 15.0 のように宣言しているので double で送る（int で送ると型違いで拒否される）
+  if (def.kind === 'integer')
+    return {
+      type: RCL_PARAMETER_TYPE.integer,
+      integer_value: Math.round(Number(value)),
+    }
   if (def.kind === 'double')
     return { type: RCL_PARAMETER_TYPE.double, double_value: Number(value) }
   return { type: RCL_PARAMETER_TYPE.string, string_value: String(value) }
