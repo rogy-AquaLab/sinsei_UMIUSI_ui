@@ -15,6 +15,7 @@ const STATE_LABEL: Record<MissionState, { label: string; className: string }> =
     SEARCH: { label: '探索', className: 'badge-secondary' },
     END: { label: '終了', className: 'badge-ghost' },
     ERROR: { label: '例外（推力 0）', className: 'badge-error' },
+    PREVIEW: { label: '認識のみ（推力なし）', className: 'badge-outline' },
   }
 
 const COLOR_LABEL: Record<BalloonColor, { label: string; className: string }> =
@@ -45,7 +46,7 @@ const AutoStatusPanel = () => {
   const frameRateHz = useAutoStatusStore((state) => state.frameRateHz)
   const mode = useRobotStateStore((state) => state.mode)
 
-  // auto_target_generator は AUTO の間だけ動く。AUTO 以外で届かないのは正常
+  // auto_target_generator は AUTO の間だけ動く（preview なら AUTO 以外でも認識だけ届く）。AUTO 以外で届かないのは正常
   const inAuto = mode === null || mode === 'AUTO'
   const state = status
     ? (STATE_LABEL[status.state] ?? { label: status.state, className: '' })

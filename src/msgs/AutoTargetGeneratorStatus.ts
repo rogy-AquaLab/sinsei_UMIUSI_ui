@@ -11,6 +11,8 @@ export type MissionState =
   | 'SEARCH'
   | 'END'
   | 'ERROR'
+  /** AUTO でない間の認識だけの表示（core の preview）。指令は出していない */
+  | 'PREVIEW'
 
 export type BalloonColor = 'yellow' | 'red' | 'blue'
 
