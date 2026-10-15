@@ -1,6 +1,12 @@
 import type { ReactElement } from 'react'
 import type { IconType } from 'react-icons'
-import { FaCamera, FaClipboardList, FaHeartbeat } from 'react-icons/fa'
+import {
+  FaCamera,
+  FaClipboardList,
+  FaHeartbeat,
+  FaSlidersH,
+} from 'react-icons/fa'
+import AutoParamsView from '@/components/AutoParamsView'
 import CameraViewer from '@/components/CameraViewer'
 import LogsView from '@/components/LogsView'
 import StatusView from '@/components/StatusView'
@@ -30,6 +36,12 @@ export const MAIN_TABS = [
     label: 'Status',
     icon: FaHeartbeat,
     content: <StatusView />,
+  },
+  {
+    id: 'auto',
+    label: 'Auto',
+    icon: FaSlidersH,
+    content: <AutoParamsView />,
   },
 ] as const satisfies readonly MainTabDefinition[]
 
