@@ -36,9 +36,9 @@ type ParamDef = {
 const DETECTION: readonly ParamDef[] = [
   {
     name: 'detector',
-    label: '検出器',
+    label: '検出器（hsv+cnn = 色が主、見つからないときだけ CNN）',
     kind: 'select',
-    options: ['hsv', 'cnn'],
+    options: ['hsv', 'cnn', 'hsv+cnn'],
   },
   {
     name: 'cnn_model',
@@ -53,6 +53,12 @@ const DETECTION: readonly ParamDef[] = [
     label: 'CNN の推論スレッド数',
     kind: 'integer',
     step: 1,
+  },
+  {
+    name: 'cnn_assist_max_age',
+    label: 'hsv+cnn で CNN の結果を使う古さの上限 [s]',
+    kind: 'double',
+    step: 0.1,
   },
 ]
 const MISSION: readonly ParamDef[] = [
