@@ -102,6 +102,10 @@ class RoslibSession implements RosSession {
     const topic = new RoslibTopic<Message>({
       ros: this.#ros,
       ...spec,
+      // JSONではNaNを表現できず、rosbridgeがNaNを含むメッセージを送ると
+      // roslibがパースに失敗して接続ごと落ちるため、CBORで受け取る
+      // CBORでは可変長の数値配列がTypedArrayで届くことに注意
+      compression: 'cbor',
       reconnect_on_close: false,
     })
     topic.subscribe(callback)

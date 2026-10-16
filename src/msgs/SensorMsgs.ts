@@ -25,23 +25,23 @@ export const POWER_SUPPLY_HEALTH = {
 
 /**
  * sensor_msgs/msg/BatteryState message definition.
- * NaN values may arrive as null over rosbridge.
+ * Unavailable values are NaN.
  */
 export type BatteryState = {
   header: StdMsgs.Header
-  voltage: number | null // [V]
-  temperature: number | null // [degC]
-  current: number | null // [A], negative when discharging
-  charge: number | null // [Ah]
-  capacity: number | null // [Ah]
-  design_capacity: number | null // [Ah]
-  percentage: number | null // (0.0 ~ 1.0)
+  voltage: number // [V]
+  temperature: number // [degC]
+  current: number // [A], negative when discharging
+  charge: number // [Ah]
+  capacity: number // [Ah]
+  design_capacity: number // [Ah]
+  percentage: number // (0.0 ~ 1.0)
   power_supply_status: number
   power_supply_health: number
   power_supply_technology: number
   present: boolean
-  cell_voltage: (number | null)[] // [V]
-  cell_temperature: (number | null)[] // [degC]
+  cell_voltage: number[] // [V]
+  cell_temperature: number[] // [degC]
   location: string
   serial_number: string
 }

@@ -51,18 +51,15 @@ const faultLabels: [keyof BmsFaults, string][] = [
   ['charge_overcurrent', 'Charge overcurrent'],
 ]
 
-type TemperatureEntry = [label: string, value: number | null]
+type TemperatureEntry = [label: string, value: number]
 
-const isNumber = (value: number | null | undefined): value is number =>
+const isNumber = (value: number | undefined): value is number =>
   typeof value === 'number' && Number.isFinite(value)
 
-const formatValue = (
-  value: number | null | undefined,
-  unit: string,
-  digits = 1,
-) => (isNumber(value) ? `${value.toFixed(digits)} ${unit}` : '--')
+const formatValue = (value: number | undefined, unit: string, digits = 1) =>
+  isNumber(value) ? `${value.toFixed(digits)} ${unit}` : '--'
 
-const formatPercentage = (value: number | null | undefined) =>
+const formatPercentage = (value: number | undefined) =>
   isNumber(value) ? `${(value * 100).toFixed(0)}%` : '--'
 
 const Stat = ({
@@ -129,17 +126,15 @@ const BatteryPanel = () => {
       powerSwitchConfig[BMS_POWER_SWITCH.UNKNOWN])
     : undefined
   const cellVoltages = battery?.cell_voltage ?? []
-  const temperatures = bms
-    ? (
-        [
-          ['Balance IC', bms.balance_ic_temperature],
-          ['MOSFET', bms.mosfet_temperature],
-          ['Ambient', bms.ambient_temperature],
-          ...bms.additional_temperatures.map(
-            (value, index): TemperatureEntry => [`Sensor ${index}`, value],
-          ),
-        ] satisfies TemperatureEntry[]
-      ).filter((entry): entry is [string, number] => isNumber(entry[1]))
+  const temperatures: TemperatureEntry[] = bms
+    ? [
+        ['Balance IC', bms.balance_ic_temperature] as TemperatureEntry,
+        ['MOSFET', bms.mosfet_temperature] as TemperatureEntry,
+        ['Ambient', bms.ambient_temperature] as TemperatureEntry,
+        ...bms.additional_temperatures.map(
+          (value, index): TemperatureEntry => [`Sensor ${index}`, value],
+        ),
+      ].filter(([, value]) => isNumber(value))
     : []
 
   return (
