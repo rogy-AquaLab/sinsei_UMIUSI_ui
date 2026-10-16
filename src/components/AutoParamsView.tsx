@@ -186,16 +186,18 @@ const ALL = [...DETECTION, ...MISSION]
 
 type Value = string | number | boolean
 
-const withTimeout = <T,>(p: Promise<T>) =>
-  Promise.race([
+const withTimeout = <T,>(p: Promise<T>) => {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  return Promise.race([
     p,
-    new Promise<T>((_, reject) =>
-      setTimeout(
+    new Promise<T>((_, reject) => {
+      timer = setTimeout(
         () => reject(new Error('応答なし（auto_target_generator が居ない?）')),
         CALL_TIMEOUT_MS,
-      ),
-    ),
-  ])
+      )
+    }),
+  ]).finally(() => clearTimeout(timer))
+}
 
 const fromRcl = (
   def: ParamDef,
@@ -203,7 +205,10 @@ const fromRcl = (
 ): Value | undefined => {
   if (!v || v.type === 0) return undefined
   if (def.kind === 'bool') return v.bool_value
-  if (def.kind === 'integer') return v.integer_value
+  if (def.kind === 'integer')
+    return v.type === RCL_PARAMETER_TYPE.double
+      ? Math.round(v.double_value)
+      : v.integer_value
   if (def.kind === 'double')
     return v.type === RCL_PARAMETER_TYPE.integer
       ? v.integer_value
@@ -214,7 +219,7 @@ const fromRcl = (
 const toRcl = (def: ParamDef, value: Value) => {
   if (def.kind === 'bool')
     return { type: RCL_PARAMETER_TYPE.bool, bool_value: Boolean(value) }
-  // yaml で 15.0 のように宣言しているので double で送る（int で送ると型違いで拒否される）
+  // ノードが宣言した型で送る（型が違うと拒否される）。yaml で 15.0 と書いたものは double、2 と書いたものは integer
   if (def.kind === 'integer')
     return {
       type: RCL_PARAMETER_TYPE.integer,
@@ -237,38 +242,53 @@ const AutoParamsView = () => {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const load = useCallback(async () => {
-    if (!session || !connected) return
-    setBusy(true)
-    try {
-      const res = await withTimeout(
-        session.call<GetParametersRequest, GetParametersResponse>(GET, {
-          names: ALL.map((d) => d.name),
-        }),
-      )
-      const next: Record<string, Value> = {}
-      ALL.forEach((def, i) => {
-        const v = fromRcl(def, res.values[i])
-        if (v !== undefined) next[def.name] = v
-      })
-      setCurrent(next)
-      setEdits({})
-      setError(null)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
-    } finally {
-      setBusy(false)
-    }
-  }, [session, connected])
+  // clearEdits: 読み直しのボタンと反映の後だけ編集を捨てる。つなぎ直したときの自動の読み直しでは残す
+  const load = useCallback(
+    async (clearEdits: boolean) => {
+      if (!session || !connected) return
+      setBusy(true)
+      try {
+        const res = await withTimeout(
+          session.call<GetParametersRequest, GetParametersResponse>(GET, {
+            names: ALL.map((d) => d.name),
+          }),
+        )
+        const next: Record<string, Value> = {}
+        ALL.forEach((def, i) => {
+          const v = fromRcl(def, res.values[i])
+          if (v !== undefined) next[def.name] = v
+        })
+        setCurrent(next)
+        if (clearEdits) setEdits({})
+        setError(null)
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e))
+      } finally {
+        setBusy(false)
+      }
+    },
+    [session, connected],
+  )
 
   useEffect(() => {
-    void load()
+    void load(false)
   }, [load])
 
   const apply = async () => {
     if (!session || !connected) return
     const names = Object.keys(edits)
     if (names.length === 0) return
+    const bad = names.filter((n) => {
+      const def = ALL.find((d) => d.name === n) as ParamDef
+      return (
+        (def.kind === 'integer' || def.kind === 'double') &&
+        (edits[n] === '' || !Number.isFinite(Number(edits[n])))
+      )
+    })
+    if (bad.length) {
+      notify(`数値になっていない: ${bad.join(', ')}`, 'error')
+      return
+    }
     setBusy(true)
     try {
       const defs = names.map((n) => ALL.find((d) => d.name === n) as ParamDef)
@@ -288,7 +308,7 @@ const AutoParamsView = () => {
       if (failed.length)
         notify(`反映できなかった: ${failed.join(', ')}`, 'error')
       else notify(`${names.length} 件を反映しました`, 'success')
-      await load()
+      await load(true)
     } catch (e) {
       notify(
         `反映できなかった: ${e instanceof Error ? e.message : String(e)}`,
@@ -336,9 +356,7 @@ const AutoParamsView = () => {
           className="input input-sm w-32"
           step={def.step}
           value={String(value)}
-          onChange={(e) =>
-            set(e.target.value === '' ? '' : Number(e.target.value))
-          }
+          onChange={(e) => set(e.target.value)}
         />
       )
     return (
@@ -363,7 +381,7 @@ const AutoParamsView = () => {
             type="button"
             className="btn btn-sm"
             disabled={!connected || busy}
-            onClick={() => void load()}
+            onClick={() => void load(true)}
           >
             読み直す
           </button>
