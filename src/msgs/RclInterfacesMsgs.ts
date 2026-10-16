@@ -50,3 +50,24 @@ export type GetParametersRequest = {
 export type GetParametersResponse = {
   values: RclParameterValue[]
 }
+
+/** rcl_interfaces/msg/ParameterType の値（使うものだけ） */
+export const RCL_PARAMETER_TYPE = {
+  bool: 1,
+  integer: 2,
+  double: 3,
+  string: 4,
+} as const
+
+/**
+ * rcl_interfaces/srv/SetParameters
+ */
+export type SetParametersRequest = {
+  parameters: {
+    name: string
+    value: Partial<RclParameterValue> & { type: number }
+  }[]
+}
+export type SetParametersResponse = {
+  results: { successful: boolean; reason: string }[]
+}
