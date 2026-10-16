@@ -1,10 +1,8 @@
 import { FaAngleLeft } from 'react-icons/fa'
-import CameraStatusIcon from '@/components/navbar/CameraStatusIcon'
+import DriveStatusIcon from '@/components/navbar/DriveStatusIcon'
 import GamepadStatusIcon from '@/components/navbar/GamepadStatusIcon'
 import MainTabs from '@/components/navbar/MainTabs'
-import ModeIcon from '@/components/navbar/ModeIcon'
 import RosConnectionStatusIcon from '@/components/navbar/RosConnectionStatusIcon'
-import SystemStatusIcon from '@/components/navbar/SystemStatusIcon'
 import type { MainContentTab } from '@/mainTabs'
 
 type NavbarProps = {
@@ -22,7 +20,7 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
             alt="Aqua Logo"
             className="h-15 w-15 mr-2"
           />
-          <span className="hidden lg:inline">SINSEI UMIUSI</span>
+          <span className="hidden lg:inline">ALEXANDRITE</span>
         </div>
       </div>
       <div className="navbar-center">
@@ -30,10 +28,8 @@ const Navbar = ({ activeTab, onTabChange }: NavbarProps) => {
       </div>
       <div className="navbar-end">
         <div className="flex items-center gap-5">
-          <ModeIcon />
-          <SystemStatusIcon />
+          <DriveStatusIcon />
           <GamepadStatusIcon />
-          <CameraStatusIcon />
           <RosConnectionStatusIcon />
           <label
             htmlFor="my-drawer"

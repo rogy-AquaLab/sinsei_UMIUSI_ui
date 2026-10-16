@@ -1,8 +1,6 @@
 import type { PropsWithChildren } from 'react'
+import ArmButton from '@/components/drawer/ArmButton'
 import GamepadSelect from '@/components/drawer/GamepadSelect'
-import MainPowerButton from '@/components/drawer/MainPowerButton'
-import OperationButton from '@/components/drawer/OparationButton'
-import OperationModeSelect from '@/components/drawer/OperationModeSelect'
 import RobotHostInput from '@/components/drawer/RobotHostInput'
 import RosConnectButton from '@/components/drawer/RosConnectButton'
 
@@ -31,16 +29,11 @@ const Drawer = ({ children }: PropsWithChildren) => {
                 Gamepad
               </label>
               <GamepadSelect />
-              <label htmlFor="mode-select" className="label">
-                Operation Mode
-              </label>
-              <OperationModeSelect />
             </fieldset>
           </div>
           <ul className="menu w-full grow">
             {/* List item */}
-            <OperationButton />
-            <MainPowerButton />
+            <ArmButton />
             <RosConnectButton />
           </ul>
         </div>

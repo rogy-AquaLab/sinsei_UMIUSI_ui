@@ -65,3 +65,15 @@ export type ThrusterStateAll = {
   rb: ThrusterState
   rf: ThrusterState
 }
+
+export type ThrusterRunnable = {
+  esc: boolean
+  servo: boolean
+}
+
+export type ThrusterRunnableAll = {
+  lf: ThrusterRunnable
+  lb: ThrusterRunnable
+  rb: ThrusterRunnable
+  rf: ThrusterRunnable
+}
