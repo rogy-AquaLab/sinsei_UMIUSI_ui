@@ -13,8 +13,8 @@ const rows: {
   hasServo: boolean
 }[] = [
   { key: 'thruster1', shortLabel: 'T1', label: 'Front left', hasServo: true },
-  { key: 'thruster2', shortLabel: 'T2', label: 'Front right', hasServo: true },
-  { key: 'thruster3', shortLabel: 'T3', label: 'Rear', hasServo: true },
+  { key: 'thruster2', shortLabel: 'T2', label: 'Rear', hasServo: true },
+  { key: 'thruster3', shortLabel: 'T3', label: 'Front right', hasServo: true },
   {
     key: 'crawler_left',
     shortLabel: 'CL',

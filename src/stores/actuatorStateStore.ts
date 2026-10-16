@@ -110,12 +110,12 @@ const syncActuatorSubscriptions = () => {
   if (!session || connectionState !== 'connected') return
 
   disposeActuatorSubscriptions = [
-    // Alexandriteにrbのスラスタは無いため、lf・rf・lbだけを使う（指令と同じ対応）
+    // 左前から反時計回りに thruster1〜3 = 左前、後ろ、右前 = lf、lb、rf（rbは無い）
     session.subscribe<ThrusterStateAll>(THRUSTER_STATE_TOPIC, (message) =>
       updateActuators({
         thruster1: message.lf,
-        thruster2: message.rf,
-        thruster3: message.lb,
+        thruster2: message.lb,
+        thruster3: message.rf,
       }),
     ),
     session.subscribe<ThrusterState>(
