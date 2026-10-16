@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react'
 import type { IconType } from 'react-icons'
-import { FaClipboardList, FaHeartbeat } from 'react-icons/fa'
+import { FaCamera, FaClipboardList, FaHeartbeat } from 'react-icons/fa'
+import CameraViewer from '@/components/CameraViewer'
 import LogsView from '@/components/LogsView'
 import StatusView from '@/components/StatusView'
 
@@ -12,7 +13,12 @@ type MainTabDefinition = {
 }
 
 export const MAIN_TABS = [
-  // Alexandriteにはカメラが無いため、Statusを先頭にする
+  {
+    id: 'camera',
+    label: 'Camera',
+    icon: FaCamera,
+    content: <CameraViewer />,
+  },
   {
     id: 'status',
     label: 'Status',
