@@ -26,9 +26,6 @@ const RUNNABLE_TOPIC = {
   messageType: 'sinsei_umiusi_msgs/msg/ThrusterRunnableAll',
 }
 
-// クローラーの前後・旋回の最大値（コントローラ側でもmax_dutyで制限される）
-const CRAWLER_SCALE = 0.5
-
 const ZERO_TARGET: Msgs.Target = {
   velocity: { x: 0, y: 0, z: 0 },
   orientation: { x: 0, y: 0, z: 0 },
@@ -69,8 +66,9 @@ const createCrawlerTargetMessage = (gamepad: Gamepad): Msgs.Target => {
   const { axes } = mapGamepad(gamepad)
 
   return {
-    velocity: { x: -CRAWLER_SCALE * deadzone(axes.l.y), y: 0, z: 0 },
-    orientation: { x: 0, y: 0, z: -CRAWLER_SCALE * deadzone(axes.l.x) },
+    // -1〜1の入力として送り、Dutyの上限はコントローラのcrawler_max_dutyで決まる
+    velocity: { x: -deadzone(axes.l.y), y: 0, z: 0 },
+    orientation: { x: 0, y: 0, z: -deadzone(axes.l.x) },
   }
 }
 
