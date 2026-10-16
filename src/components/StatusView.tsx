@@ -1,4 +1,5 @@
 import DrivePanel from '@/components/drive/DrivePanel'
+import ActuatorPanel from '@/components/status/ActuatorPanel'
 import BallastPanel from '@/components/status/BallastPanel'
 import BatteryPanel from '@/components/status/BatteryPanel'
 
@@ -10,6 +11,7 @@ const StatusView = () => {
           <h1 className="text-2xl font-semibold tracking-tight">Alexandrite</h1>
         </div>
         <DrivePanel />
+        <ActuatorPanel />
         <BallastPanel />
         <BatteryPanel />
       </div>
