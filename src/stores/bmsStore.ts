@@ -61,14 +61,23 @@ const syncBmsSubscriptions = () => {
   disposeBmsSubscriptions = [
     session.subscribe<BatteryState>(BATTERY_STATE_TOPIC, (battery) => {
       useBmsStore.setState({
-        battery,
+        battery: {
+          ...battery,
+          // CBORではTypedArrayで届くため、通常の配列に直す
+          cell_voltage: Array.from(battery.cell_voltage),
+          cell_temperature: Array.from(battery.cell_temperature),
+        },
         receivedAt: Date.now(),
         telemetryStatus: 'fresh',
       })
     }),
     session.subscribe<BmsState>(BMS_STATE_TOPIC, (bms) => {
       useBmsStore.setState({
-        bms,
+        bms: {
+          ...bms,
+          cell_balancing: Array.from(bms.cell_balancing),
+          additional_temperatures: Array.from(bms.additional_temperatures),
+        },
         receivedAt: Date.now(),
         telemetryStatus: 'fresh',
       })

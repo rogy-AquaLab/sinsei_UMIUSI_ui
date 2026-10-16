@@ -66,11 +66,11 @@ export type BmsState = {
   charge_allowed: boolean
   cell_balancing: boolean[]
   charger_voltage: number
-  // 値が無い温度センサはNaN（rosbridge経由ではnullで届くことがある）
-  balance_ic_temperature: number | null
-  mosfet_temperature: number | null
-  ambient_temperature: number | null
-  additional_temperatures: (number | null)[]
+  // 値が無い温度センサはNaN
+  balance_ic_temperature: number
+  mosfet_temperature: number
+  ambient_temperature: number
+  additional_temperatures: number[]
   power_switch_state: number
   faults: BmsFaults
 }
