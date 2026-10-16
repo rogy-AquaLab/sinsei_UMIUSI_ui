@@ -1,4 +1,5 @@
 import type * as GeometryMsgs from '@/msgs/GeometryMsgs'
+import type * as StdMsgs from '@/msgs/StdMsgs'
 import type { RobotModeNum } from '@/msgs/utils/RobotMode'
 
 export type Target = {
@@ -26,19 +27,52 @@ export type LowPowerCircuitInfo = {
   indicator_led: number
 }
 
-export type EscState = {
-  voltage: number
-  water_leaked: boolean
-}
+export const HIGH_POWER_CIRCUIT_STATE = {
+  OK: 0,
+  ERROR: 1,
+} as const
 
 export type HighPowerCircuitInfo = {
-  voltage: number
-  temperature: number
-  water_leaked: boolean
-  esc_lf_state: EscState
-  esc_lb_state: EscState
-  esc_rb_state: EscState
-  esc_rf_state: EscState
+  bms: number
+  battery: number
+  esc_lf: number
+  esc_lb: number
+  esc_rb: number
+  esc_rf: number
+}
+
+export const BMS_POWER_SWITCH = {
+  UNKNOWN: 0,
+  INITIALIZING: 1,
+  OFF: 2,
+  PRECHARGE: 3,
+  ON: 4,
+  FAULT: 5,
+} as const
+
+export type BmsFaults = {
+  precharge: boolean
+  short_circuit: boolean
+  switch_over_temperature: boolean
+  charge_overcurrent: boolean
+}
+
+export type BmsState = {
+  header: StdMsgs.Header
+  state_of_health: number
+  cell_voltage_min: number
+  cell_voltage_max: number
+  balancing: boolean
+  charge_allowed: boolean
+  cell_balancing: boolean[]
+  charger_voltage: number
+  // 値が無い温度センサはNaN
+  balance_ic_temperature: number
+  mosfet_temperature: number
+  ambient_temperature: number
+  additional_temperatures: number[]
+  power_switch_state: number
+  faults: BmsFaults
 }
 
 export type ThrusterMode = {
@@ -57,6 +91,8 @@ export type ThrusterState = {
   duty_cycle: number
   angle: number
   rpm: number
+  input_voltage: number
+  water_leaked: boolean
 }
 
 export type ThrusterStateAll = {
