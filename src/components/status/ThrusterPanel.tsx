@@ -65,6 +65,11 @@ const formatAngle = (thruster: ThrusterState | undefined) =>
 const formatRpm = (thruster: ThrusterState | undefined) =>
   thruster ? Math.round(thruster.rpm).toLocaleString() : '--'
 
+const formatVoltage = (thruster: ThrusterState | undefined) =>
+  thruster && Number.isFinite(thruster.input_voltage)
+    ? `${thruster.input_voltage.toFixed(1)} V`
+    : '--'
+
 const ThrusterPanel = () => {
   const { thrusters, telemetryStatus } = useThrusterStateStore()
   const isFresh = telemetryStatus === 'fresh'
@@ -114,6 +119,8 @@ const ThrusterPanel = () => {
               <th className="text-right">Duty</th>
               <th className="text-right">Angle</th>
               <th className="text-right">RPM</th>
+              <th className="text-right">Voltage</th>
+              <th>Water</th>
             </tr>
           </thead>
           <tbody>
@@ -155,6 +162,26 @@ const ThrusterPanel = () => {
                   </td>
                   <td className="text-right font-mono">
                     {isFresh ? formatRpm(thruster) : '--'}
+                  </td>
+                  <td className="text-right font-mono">
+                    {isFresh ? formatVoltage(thruster) : '--'}
+                  </td>
+                  <td>
+                    {isFresh && thruster ? (
+                      <span
+                        className={`badge badge-soft badge-sm ${
+                          thruster.water_leaked
+                            ? 'badge-error'
+                            : 'badge-success'
+                        }`}
+                      >
+                        {thruster.water_leaked ? 'Leak' : 'Dry'}
+                      </span>
+                    ) : (
+                      <span className="badge badge-soft badge-sm badge-ghost">
+                        Unknown
+                      </span>
+                    )}
                   </td>
                 </tr>
               )

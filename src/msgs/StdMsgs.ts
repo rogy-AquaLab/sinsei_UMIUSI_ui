@@ -3,6 +3,11 @@ export type Time = {
   nanosec?: number
 }
 
+export type Header = {
+  stamp: Time
+  frame_id: string
+}
+
 export type ColorRGBA = {
   r: number
   g: number

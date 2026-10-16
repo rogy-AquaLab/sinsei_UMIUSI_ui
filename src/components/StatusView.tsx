@@ -1,5 +1,6 @@
 import DrivePanel from '@/components/drive/DrivePanel'
 import BallastPanel from '@/components/status/BallastPanel'
+import BatteryPanel from '@/components/status/BatteryPanel'
 
 const StatusView = () => {
   return (
@@ -10,6 +11,7 @@ const StatusView = () => {
         </div>
         <DrivePanel />
         <BallastPanel />
+        <BatteryPanel />
       </div>
     </div>
   )
