@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   type GetParametersRequest,
   type GetParametersResponse,
+  type ListParametersRequest,
+  type ListParametersResponse,
   RCL_PARAMETER_TYPE,
   type RclParameterValue,
   type SetParametersRequest,
@@ -16,6 +18,12 @@ const GET = {
   name: `${NODE}/get_parameters`,
   serviceType: 'rcl_interfaces/srv/GetParameters',
 }
+// rclpy の get_parameters は、宣言されていない名前が 1 つでもあると全部を空で返す。
+// 古い core（UI が知っている名前の一部が無い）でも残りを表示できるよう、先に宣言済みの名前を聞く
+const LIST = {
+  name: `${NODE}/list_parameters`,
+  serviceType: 'rcl_interfaces/srv/ListParameters',
+}
 const SET = {
   name: `${NODE}/set_parameters`,
   serviceType: 'rcl_interfaces/srv/SetParameters',
@@ -23,7 +31,8 @@ const SET = {
 // 呼び出しにタイムアウトが無いので、ノードが居ないときに待ち続けないよう打ち切る
 const CALL_TIMEOUT_MS = 3_000
 
-type ParamKind = 'double' | 'integer' | 'bool' | 'select'
+// colors: 文字列の配列（mission.priority）。選択肢は 'red,yellow' のようにカンマでつなぐ
+type ParamKind = 'double' | 'integer' | 'bool' | 'select' | 'colors'
 type ParamDef = {
   name: string
   label: string
@@ -60,8 +69,42 @@ const DETECTION: readonly ParamDef[] = [
     kind: 'double',
     step: 0.1,
   },
+  {
+    name: 'cnn_assist_conf',
+    label: 'hsv+cnn で使う CNN の確信度の下限',
+    kind: 'double',
+    step: 0.05,
+  },
+  {
+    name: 'cnn_assist_confirm',
+    label: 'hsv+cnn で、続けて 2 回見えた CNN だけ使う',
+    kind: 'bool',
+  },
+  {
+    name: 'cnn_merge',
+    label: 'CNN の重なった箱を 1 個にまとめる',
+    kind: 'bool',
+  },
 ]
 const MISSION: readonly ParamDef[] = [
+  {
+    name: 'mission.priority',
+    label: '狙う色（左ほど優先。最初の 1 個は first_color）',
+    kind: 'colors',
+    options: ['red,yellow', 'yellow', 'red', 'yellow,red'],
+  },
+  {
+    name: 'mission.first_color',
+    label: '最初に狙う色',
+    kind: 'select',
+    options: ['yellow', 'red'],
+  },
+  {
+    name: 'mission.max_rams',
+    label: '同じ色に続けて突っ込む上限（1 色だけ狙うなら大きく）',
+    kind: 'integer',
+    step: 1,
+  },
   {
     name: 'use_hold_yaw',
     label: '方位保持（hold_yaw、fb でだけ効く）',
@@ -88,6 +131,12 @@ const MISSION: readonly ParamDef[] = [
   {
     name: 'mission.k_yaw',
     label: '横ずれ → 旋回のゲイン',
+    kind: 'double',
+    step: 0.1,
+  },
+  {
+    name: 'mission.k_yaw_cnn',
+    label: '横ずれ → 旋回のゲイン（目標が CNN のとき）',
     kind: 'double',
     step: 0.1,
   },
@@ -158,6 +207,12 @@ const MISSION: readonly ParamDef[] = [
     step: 0.01,
   },
   {
+    name: 'mission.ram_radius_cnn',
+    label: '突進を始める大きさ（目標が CNN のとき。0 = 上と同じ）',
+    kind: 'double',
+    step: 0.01,
+  },
+  {
     name: 'mission.backoff_surge',
     label: '後退 surge',
     kind: 'double',
@@ -213,6 +268,7 @@ const fromRcl = (
     return v.type === RCL_PARAMETER_TYPE.integer
       ? v.integer_value
       : v.double_value
+  if (def.kind === 'colors') return (v.string_array_value ?? []).join(',')
   return v.string_value
 }
 
@@ -227,6 +283,14 @@ const toRcl = (def: ParamDef, value: Value) => {
     }
   if (def.kind === 'double')
     return { type: RCL_PARAMETER_TYPE.double, double_value: Number(value) }
+  if (def.kind === 'colors')
+    return {
+      type: RCL_PARAMETER_TYPE.string_array,
+      string_array_value: String(value)
+        .split(',')
+        .map((c) => c.trim())
+        .filter(Boolean),
+    }
   return { type: RCL_PARAMETER_TYPE.string, string_value: String(value) }
 }
 
@@ -248,13 +312,21 @@ const AutoParamsView = () => {
       if (!session || !connected) return
       setBusy(true)
       try {
+        const listed = await withTimeout(
+          session.call<ListParametersRequest, ListParametersResponse>(LIST, {
+            prefixes: [],
+            depth: 0,
+          }),
+        )
+        const declared = new Set(listed.result.names)
+        const defs = ALL.filter((d) => declared.has(d.name))
         const res = await withTimeout(
           session.call<GetParametersRequest, GetParametersResponse>(GET, {
-            names: ALL.map((d) => d.name),
+            names: defs.map((d) => d.name),
           }),
         )
         const next: Record<string, Value> = {}
-        ALL.forEach((def, i) => {
+        defs.forEach((def, i) => {
           const v = fromRcl(def, res.values[i])
           if (v !== undefined) next[def.name] = v
         })
@@ -325,7 +397,9 @@ const AutoParamsView = () => {
     const set = (v: Value) => setEdits((prev) => ({ ...prev, [def.name]: v }))
     let input: React.ReactNode
     if (value === undefined)
-      input = <span className="text-base-content/50">—</span>
+      input = (
+        <span className="text-base-content/50">—（この core に無い）</span>
+      )
     else if (def.kind === 'bool')
       input = (
         <input
@@ -335,7 +409,7 @@ const AutoParamsView = () => {
           onChange={(e) => set(e.target.checked)}
         />
       )
-    else if (def.kind === 'select')
+    else if (def.kind === 'select' || def.kind === 'colors')
       input = (
         <select
           className="select select-sm w-64"
