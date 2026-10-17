@@ -23,7 +23,8 @@ const SET = {
 // 呼び出しにタイムアウトが無いので、ノードが居ないときに待ち続けないよう打ち切る
 const CALL_TIMEOUT_MS = 3_000
 
-type ParamKind = 'double' | 'integer' | 'bool' | 'select'
+// colors: 文字列の配列（mission.priority）。選択肢は 'red,yellow' のようにカンマでつなぐ
+type ParamKind = 'double' | 'integer' | 'bool' | 'select' | 'colors'
 type ParamDef = {
   name: string
   label: string
@@ -78,6 +79,24 @@ const DETECTION: readonly ParamDef[] = [
   },
 ]
 const MISSION: readonly ParamDef[] = [
+  {
+    name: 'mission.priority',
+    label: '狙う色（左ほど優先。最初の 1 個は first_color）',
+    kind: 'colors',
+    options: ['red,yellow', 'yellow', 'red', 'yellow,red'],
+  },
+  {
+    name: 'mission.first_color',
+    label: '最初に狙う色',
+    kind: 'select',
+    options: ['yellow', 'red'],
+  },
+  {
+    name: 'mission.max_rams',
+    label: '同じ色に続けて突っ込む上限（1 色だけ狙うなら大きく）',
+    kind: 'integer',
+    step: 1,
+  },
   {
     name: 'use_hold_yaw',
     label: '方位保持（hold_yaw、fb でだけ効く）',
@@ -241,6 +260,7 @@ const fromRcl = (
     return v.type === RCL_PARAMETER_TYPE.integer
       ? v.integer_value
       : v.double_value
+  if (def.kind === 'colors') return (v.string_array_value ?? []).join(',')
   return v.string_value
 }
 
@@ -255,6 +275,14 @@ const toRcl = (def: ParamDef, value: Value) => {
     }
   if (def.kind === 'double')
     return { type: RCL_PARAMETER_TYPE.double, double_value: Number(value) }
+  if (def.kind === 'colors')
+    return {
+      type: RCL_PARAMETER_TYPE.string_array,
+      string_array_value: String(value)
+        .split(',')
+        .map((c) => c.trim())
+        .filter(Boolean),
+    }
   return { type: RCL_PARAMETER_TYPE.string, string_value: String(value) }
 }
 
@@ -363,7 +391,7 @@ const AutoParamsView = () => {
           onChange={(e) => set(e.target.checked)}
         />
       )
-    else if (def.kind === 'select')
+    else if (def.kind === 'select' || def.kind === 'colors')
       input = (
         <select
           className="select select-sm w-64"
