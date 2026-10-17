@@ -71,3 +71,14 @@ export type SetParametersRequest = {
 export type SetParametersResponse = {
   results: { successful: boolean; reason: string }[]
 }
+
+/**
+ * rcl_interfaces/srv/ListParameters
+ */
+export type ListParametersRequest = {
+  prefixes: string[]
+  depth: number // 0 = 深さ無制限
+}
+export type ListParametersResponse = {
+  result: { names: string[]; prefixes: string[] }
+}
