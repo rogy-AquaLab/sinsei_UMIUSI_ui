@@ -60,6 +60,22 @@ const DETECTION: readonly ParamDef[] = [
     kind: 'double',
     step: 0.1,
   },
+  {
+    name: 'cnn_assist_conf',
+    label: 'hsv+cnn で使う CNN の確信度の下限',
+    kind: 'double',
+    step: 0.05,
+  },
+  {
+    name: 'cnn_assist_confirm',
+    label: 'hsv+cnn で、続けて 2 回見えた CNN だけ使う',
+    kind: 'bool',
+  },
+  {
+    name: 'cnn_merge',
+    label: 'CNN の重なった箱を 1 個にまとめる',
+    kind: 'bool',
+  },
 ]
 const MISSION: readonly ParamDef[] = [
   {
@@ -88,6 +104,12 @@ const MISSION: readonly ParamDef[] = [
   {
     name: 'mission.k_yaw',
     label: '横ずれ → 旋回のゲイン',
+    kind: 'double',
+    step: 0.1,
+  },
+  {
+    name: 'mission.k_yaw_cnn',
+    label: '横ずれ → 旋回のゲイン（目標が CNN のとき）',
     kind: 'double',
     step: 0.1,
   },
@@ -154,6 +176,12 @@ const MISSION: readonly ParamDef[] = [
   {
     name: 'mission.ram_radius',
     label: '突進を始める大きさ（半径/幅）',
+    kind: 'double',
+    step: 0.01,
+  },
+  {
+    name: 'mission.ram_radius_cnn',
+    label: '突進を始める大きさ（目標が CNN のとき。0 = 上と同じ）',
     kind: 'double',
     step: 0.01,
   },
