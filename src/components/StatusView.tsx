@@ -1,3 +1,4 @@
+import BatteryPanel from '@/components/status/BatteryPanel'
 import HealthPanel from '@/components/status/HealthPanel'
 import ThrusterPanel from '@/components/status/ThrusterPanel'
 
@@ -12,7 +13,10 @@ const StatusView = () => {
         </div>
         <div className="grid flex-1 items-start gap-6 xl:grid-cols-[minmax(18rem,0.8fr)_minmax(0,2fr)]">
           <HealthPanel />
-          <ThrusterPanel />
+          <div className="flex min-w-0 flex-col gap-6">
+            <ThrusterPanel />
+            <BatteryPanel />
+          </div>
         </div>
       </div>
     </div>

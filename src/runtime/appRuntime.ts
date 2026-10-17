@@ -2,6 +2,7 @@ import { composeInitializers } from '@/runtime/composeInitializers'
 import { initializeGamepadRuntime } from '@/runtime/gamepadRuntime'
 import { initializeAttitudeTargetStore } from '@/stores/attitudeTargetStore'
 import { initializeAutoStatusStore } from '@/stores/autoStatusStore'
+import { initializeBmsStore } from '@/stores/bmsStore'
 import { initializeCameraStreamStore } from '@/stores/cameraStreamStore'
 import { initializeHealthStore } from '@/stores/healthStore'
 import { initializeRobotStateStore } from '@/stores/robotStateStore'
@@ -17,6 +18,7 @@ export const initializeAppRuntime = composeInitializers(
   initializeHealthStore,
   initializeThrusterStateStore,
   initializeAttitudeTargetStore,
+  initializeBmsStore,
   initializeCameraStreamStore,
   initializeAutoStatusStore,
 )
