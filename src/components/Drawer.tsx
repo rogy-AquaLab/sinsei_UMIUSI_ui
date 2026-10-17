@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'react'
+import DisabledThrusterSelect from '@/components/drawer/DisabledThrusterSelect'
 import GamepadSelect from '@/components/drawer/GamepadSelect'
 import MainPowerButton from '@/components/drawer/MainPowerButton'
 import OperationButton from '@/components/drawer/OparationButton'
@@ -35,6 +36,10 @@ const Drawer = ({ children }: PropsWithChildren) => {
                 Operation Mode
               </label>
               <OperationModeSelect />
+              <label htmlFor="disabled-thruster-select" className="label">
+                Thrusters
+              </label>
+              <DisabledThrusterSelect />
             </fieldset>
           </div>
           <ul className="menu w-full grow">
