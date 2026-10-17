@@ -39,6 +39,7 @@ export type RclParameterValue = {
   integer_value: number
   double_value: number
   string_value: string
+  string_array_value?: string[]
 }
 
 /**
@@ -57,6 +58,7 @@ export const RCL_PARAMETER_TYPE = {
   integer: 2,
   double: 3,
   string: 4,
+  string_array: 9,
 } as const
 
 /**
