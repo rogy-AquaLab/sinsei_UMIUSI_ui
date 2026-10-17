@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   type GetParametersRequest,
   type GetParametersResponse,
+  type ListParametersRequest,
+  type ListParametersResponse,
   RCL_PARAMETER_TYPE,
   type RclParameterValue,
   type SetParametersRequest,
@@ -15,6 +17,12 @@ const NODE = '/auto_target_generator'
 const GET = {
   name: `${NODE}/get_parameters`,
   serviceType: 'rcl_interfaces/srv/GetParameters',
+}
+// rclpy の get_parameters は、宣言されていない名前が 1 つでもあると全部を空で返す。
+// 古い core（UI が知っている名前の一部が無い）でも残りを表示できるよう、先に宣言済みの名前を聞く
+const LIST = {
+  name: `${NODE}/list_parameters`,
+  serviceType: 'rcl_interfaces/srv/ListParameters',
 }
 const SET = {
   name: `${NODE}/set_parameters`,
@@ -304,13 +312,21 @@ const AutoParamsView = () => {
       if (!session || !connected) return
       setBusy(true)
       try {
+        const listed = await withTimeout(
+          session.call<ListParametersRequest, ListParametersResponse>(LIST, {
+            prefixes: [],
+            depth: 0,
+          }),
+        )
+        const declared = new Set(listed.result.names)
+        const defs = ALL.filter((d) => declared.has(d.name))
         const res = await withTimeout(
           session.call<GetParametersRequest, GetParametersResponse>(GET, {
-            names: ALL.map((d) => d.name),
+            names: defs.map((d) => d.name),
           }),
         )
         const next: Record<string, Value> = {}
-        ALL.forEach((def, i) => {
+        defs.forEach((def, i) => {
           const v = fromRcl(def, res.values[i])
           if (v !== undefined) next[def.name] = v
         })
@@ -381,7 +397,9 @@ const AutoParamsView = () => {
     const set = (v: Value) => setEdits((prev) => ({ ...prev, [def.name]: v }))
     let input: React.ReactNode
     if (value === undefined)
-      input = <span className="text-base-content/50">—</span>
+      input = (
+        <span className="text-base-content/50">—（この core に無い）</span>
+      )
     else if (def.kind === 'bool')
       input = (
         <input
