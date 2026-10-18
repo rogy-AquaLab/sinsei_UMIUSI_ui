@@ -29,3 +29,45 @@ export type RclLog = {
   function: string // Function in the source file.
   line: number // Line number in the source file.
 }
+
+/**
+ * rcl_interfaces/msg/ParameterValue (使うフィールドだけ)
+ */
+export type RclParameterValue = {
+  type: number
+  bool_value: boolean
+  integer_value: number
+  double_value: number
+  string_value: string
+}
+
+/**
+ * rcl_interfaces/srv/GetParameters
+ */
+export type GetParametersRequest = {
+  names: string[]
+}
+export type GetParametersResponse = {
+  values: RclParameterValue[]
+}
+
+/** rcl_interfaces/msg/ParameterType の値（使うものだけ） */
+export const RCL_PARAMETER_TYPE = {
+  bool: 1,
+  integer: 2,
+  double: 3,
+  string: 4,
+} as const
+
+/**
+ * rcl_interfaces/srv/SetParameters
+ */
+export type SetParametersRequest = {
+  parameters: {
+    name: string
+    value: Partial<RclParameterValue> & { type: number }
+  }[]
+}
+export type SetParametersResponse = {
+  results: { successful: boolean; reason: string }[]
+}

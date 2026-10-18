@@ -8,7 +8,6 @@ import {
   FaQuestionCircle,
 } from 'react-icons/fa'
 import {
-  type EscState,
   type HighPowerCircuitInfo,
   LOW_POWER_CIRCUIT_STATE,
   type LowPowerCircuitInfo,
@@ -102,95 +101,62 @@ const HealthRow = ({
   )
 }
 
-const LowPowerDetails = ({ info }: { info: LowPowerCircuitInfo | null }) => {
-  const topic = '/state/low_power_circuit_info'
-  const items = [
-    ['CAN', info?.can],
-    ['Headlights', info?.headlights],
-    ['IMU', info?.imu],
-    ['Indicator LED', info?.indicator_led],
-  ] as const
+type CircuitItem = readonly [label: string, state: number | undefined]
 
-  return (
-    <div className="tooltip tooltip-top mt-3 block w-full" data-tip={topic}>
-      <div className="grid grid-cols-2 gap-2 rounded-lg bg-base-100 p-3">
-        {items.map(([label, state]) => {
-          const isOk = state === LOW_POWER_CIRCUIT_STATE.OK
-          const isError = state === LOW_POWER_CIRCUIT_STATE.ERROR
-          return (
-            <div
-              key={label}
-              className="flex items-center justify-between gap-2"
-            >
-              <span className="text-sm">{label}</span>
-              <span
-                className={`badge badge-soft badge-sm ${
-                  isOk
-                    ? 'badge-success'
-                    : isError
-                      ? 'badge-error'
-                      : 'badge-ghost'
-                }`}
-              >
-                {isOk ? 'OK' : isError ? 'Error' : 'Unknown'}
-              </span>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-const formatValue = (value: number | undefined, unit: string) =>
-  value !== undefined && Number.isFinite(value)
-    ? `${value.toFixed(1)} ${unit}`
-    : '--'
-
-const EscDetails = ({
-  label,
-  state,
+// LowPowerCircuitInfoとHighPowerCircuitInfoはOK/ERRORの値が共通
+const CircuitDetails = ({
+  topic,
+  items,
 }: {
-  label: string
-  state: EscState | undefined
+  topic: string
+  items: readonly CircuitItem[]
 }) => (
-  <div className="flex items-center justify-between gap-2 text-sm">
-    <span>{label}</span>
-    <span className={state?.water_leaked ? 'text-error' : ''}>
-      {formatValue(state?.voltage, 'V')} ·{' '}
-      {state ? (state.water_leaked ? 'Leak' : 'Dry') : '--'}
-    </span>
+  <div className="tooltip tooltip-top mt-3 block w-full" data-tip={topic}>
+    <div className="grid grid-cols-2 gap-2 rounded-lg bg-base-100 p-3">
+      {items.map(([label, state]) => {
+        const isOk = state === LOW_POWER_CIRCUIT_STATE.OK
+        const isError = state === LOW_POWER_CIRCUIT_STATE.ERROR
+        return (
+          <div key={label} className="flex items-center justify-between gap-2">
+            <span className="text-sm">{label}</span>
+            <span
+              className={`badge badge-soft badge-sm ${
+                isOk ? 'badge-success' : isError ? 'badge-error' : 'badge-ghost'
+              }`}
+            >
+              {isOk ? 'OK' : isError ? 'Error' : 'Unknown'}
+            </span>
+          </div>
+        )
+      })}
+    </div>
   </div>
 )
 
+const LowPowerDetails = ({ info }: { info: LowPowerCircuitInfo | null }) => (
+  <CircuitDetails
+    topic="/state/low_power_circuit_info"
+    items={[
+      ['CAN', info?.can],
+      ['Headlights', info?.headlights],
+      ['IMU', info?.imu],
+      ['Indicator LED', info?.indicator_led],
+    ]}
+  />
+)
+
 const HighPowerDetails = ({ info }: { info: HighPowerCircuitInfo | null }) => (
-  <div
-    className="tooltip tooltip-top mt-3 block w-full"
-    data-tip="/state/high_power_circuit_info"
-  >
-    <div className="space-y-2 rounded-lg bg-base-100 p-3">
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <span>Battery</span>
-        <span className="text-right">{formatValue(info?.voltage, 'V')}</span>
-        <span>Temperature</span>
-        <span className="text-right">
-          {formatValue(info?.temperature, '°C')}
-        </span>
-        <span>Water ingress</span>
-        <span
-          className={`text-right ${info?.water_leaked ? 'text-error' : ''}`}
-        >
-          {info ? (info.water_leaked ? 'Detected' : 'Not detected') : '--'}
-        </span>
-      </div>
-      <div className="space-y-1 border-t border-base-300 pt-2">
-        <EscDetails label="ESC LF" state={info?.esc_lf_state} />
-        <EscDetails label="ESC LB" state={info?.esc_lb_state} />
-        <EscDetails label="ESC RB" state={info?.esc_rb_state} />
-        <EscDetails label="ESC RF" state={info?.esc_rf_state} />
-      </div>
-    </div>
-  </div>
+  <CircuitDetails
+    topic="/state/high_power_circuit_info"
+    items={[
+      ['BMS', info?.bms],
+      ['Battery', info?.battery],
+      ['ESC LF', info?.esc_lf],
+      ['ESC RF', info?.esc_rf],
+      ['ESC LB', info?.esc_lb],
+      ['ESC RB', info?.esc_rb],
+    ]}
+  />
 )
 
 const HealthPanel = () => {

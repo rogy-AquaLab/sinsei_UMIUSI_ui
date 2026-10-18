@@ -1,9 +1,17 @@
 import { useState } from 'react'
 import { FaCamera, FaThLarge } from 'react-icons/fa'
-import WebRtcVideo from '@/components/camera/WebRtcVideo'
+import AutoStatusPanel from '@/components/camera/AutoStatusPanel'
+import DetectionBoxes from '@/components/camera/DetectionBoxes'
+import WebRtcVideo, {
+  type VideoContentSize,
+} from '@/components/camera/WebRtcVideo'
 import { CAMERA_STREAMS, type CameraId } from '@/stores/cameraStreamStore'
 
 type ViewMode = CameraId | 'dual'
+
+const renderFrontOverlay = (size: VideoContentSize) => (
+  <DetectionBoxes {...size} />
+)
 
 const CameraViewer = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('dual')
@@ -27,11 +35,19 @@ const CameraViewer = () => {
             }
           >
             {visible && (
-              <WebRtcVideo cameraId={camera.id} label={camera.label} />
+              <WebRtcVideo
+                cameraId={camera.id}
+                label={camera.label}
+                renderOverlay={
+                  camera.id === 'front' ? renderFrontOverlay : undefined
+                }
+              />
             )}
           </div>
         )
       })}
+
+      {isVisible('front') && <AutoStatusPanel />}
 
       <div
         role="tablist"

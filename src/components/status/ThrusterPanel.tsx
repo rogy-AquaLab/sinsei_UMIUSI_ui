@@ -59,11 +59,23 @@ const getModeConfig = (mode: number | undefined) =>
 const formatDutyCycle = (thruster: ThrusterState | undefined) =>
   thruster ? `${(thruster.duty_cycle * 100).toFixed(1)}%` : '--'
 
-const formatAngle = (thruster: ThrusterState | undefined) =>
-  thruster ? `${((thruster.angle * 180) / Math.PI).toFixed(1)}°` : '--'
+const formatCommandedAngle = (thruster: ThrusterState | undefined) =>
+  thruster
+    ? `${((thruster.commanded_angle * 180) / Math.PI).toFixed(1)}°`
+    : '--'
+
+const formatEstimatedAngle = (thruster: ThrusterState | undefined) =>
+  thruster?.estimated_angle_available
+    ? `${((thruster.estimated_angle * 180) / Math.PI).toFixed(1)}°`
+    : '--'
 
 const formatRpm = (thruster: ThrusterState | undefined) =>
   thruster ? Math.round(thruster.rpm).toLocaleString() : '--'
+
+const formatVoltage = (thruster: ThrusterState | undefined) =>
+  thruster && Number.isFinite(thruster.input_voltage)
+    ? `${thruster.input_voltage.toFixed(1)} V`
+    : '--'
 
 const ThrusterPanel = () => {
   const { thrusters, telemetryStatus } = useThrusterStateStore()
@@ -112,8 +124,11 @@ const ThrusterPanel = () => {
               <th>ESC</th>
               <th>Servo</th>
               <th className="text-right">Duty</th>
-              <th className="text-right">Angle</th>
+              <th className="text-right">Commanded</th>
+              <th className="text-right">Estimated</th>
               <th className="text-right">RPM</th>
+              <th className="text-right">Voltage</th>
+              <th>Water</th>
             </tr>
           </thead>
           <tbody>
@@ -151,10 +166,33 @@ const ThrusterPanel = () => {
                     {isFresh ? formatDutyCycle(thruster) : '--'}
                   </td>
                   <td className="text-right font-mono">
-                    {isFresh ? formatAngle(thruster) : '--'}
+                    {isFresh ? formatCommandedAngle(thruster) : '--'}
+                  </td>
+                  <td className="text-right font-mono">
+                    {isFresh ? formatEstimatedAngle(thruster) : '--'}
                   </td>
                   <td className="text-right font-mono">
                     {isFresh ? formatRpm(thruster) : '--'}
+                  </td>
+                  <td className="text-right font-mono">
+                    {isFresh ? formatVoltage(thruster) : '--'}
+                  </td>
+                  <td>
+                    {isFresh && thruster ? (
+                      <span
+                        className={`badge badge-soft badge-sm ${
+                          thruster.water_leaked
+                            ? 'badge-error'
+                            : 'badge-success'
+                        }`}
+                      >
+                        {thruster.water_leaked ? 'Leak' : 'Dry'}
+                      </span>
+                    ) : (
+                      <span className="badge badge-soft badge-sm badge-ghost">
+                        Unknown
+                      </span>
+                    )}
                   </td>
                 </tr>
               )
