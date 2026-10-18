@@ -60,7 +60,9 @@ const formatDutyCycle = (thruster: ThrusterState | undefined) =>
   thruster ? `${(thruster.duty_cycle * 100).toFixed(1)}%` : '--'
 
 const formatCommandedAngle = (thruster: ThrusterState | undefined) =>
-  thruster ? `${((thruster.commanded_angle * 180) / Math.PI).toFixed(1)}°` : '--'
+  thruster
+    ? `${((thruster.commanded_angle * 180) / Math.PI).toFixed(1)}°`
+    : '--'
 
 const formatEstimatedAngle = (thruster: ThrusterState | undefined) =>
   thruster?.estimated_angle_available
